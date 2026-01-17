@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strategic Explainers | The Terrific</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="main-nav">
+      <div class="nav-header">
+        <div class="logo">THE DEEPREAD</div>
+        <div class="tagline">[In-depth Analysis • Global Insights • Breaking Stories]</div>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">HOME</a>
+        <span class="nav-separator">|</span>
+        <a href="memes.html" class="nav-link">MEMES</a>
+        <span class="nav-separator">|</span>
+        <a href="explainers.html" class="nav-link active">EXPLAINERS</a>
+        <span class="nav-separator">|</span>
+        <a href="sports.html" class="nav-link">SPORTS</a>
+        <span class="nav-separator">|</span>
+        <a href="propaganda.html" class="nav-link">PROPAGANDA LAB</a>
+        <span class="nav-separator">|</span>
+        <a href="wars.html" class="nav-link">WARS & POWER</a>
+
+        <button id="themeToggleBtn" class="theme-toggle-top" type="button" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search...">
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="content">
+      <header class="site-header">
+        <h1>Strategic Explainers</h1>
+        <p>Deep analysis of global economic, political & war developments</p>
+        <div class="refresh-controls">
+          <button id="refreshBtn">Refresh New Explainers</button>
+          <span id="refreshStatus" class="refresh-status"></span>
+        </div>
+      </header>
+
+      <section id="explainers-feed" class="explainers-grid"></section>
+
+      <div id="loading">Loading explainers…</div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="footer-content">
+        <div class="footer-divider"></div>
+        <div class="footer-links">
+          <a href="about.html" class="footer-link">About</a>
+          <span class="footer-separator">|</span>
+          <a href="terms.html" class="footer-link">Terms</a>
+          <span class="footer-separator">|</span>
+          <a href="contact.html" class="footer-link">Contact</a>
+          <span class="footer-separator">|</span>
+          <a href="privacy.html" class="footer-link">Privacy Policy</a>
+        </div>
+        <div class="footer-copyright">
+          THE TERRIFIC © 2025 — Memes, Geopolitics & Propaganda Science
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/explainers.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/scroll-to-top.js"></script>
+</body>
+</html>

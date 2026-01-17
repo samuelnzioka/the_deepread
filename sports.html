@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports — The Terrific</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="js/sports-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="site-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="logo">THE DEEPREAD</div>
+                <div class="tagline">[In-depth Analysis • Global Insights • Breaking Stories]</div>
+            </div>
+            <div class="nav-divider"></div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">HOME</a>
+                <span class="nav-separator">|</span>
+                <a href="memes.html" class="nav-link">MEMES</a>
+                <span class="nav-separator">|</span>
+                <a href="explainers.html" class="nav-link">EXPLAINERS</a>
+                <span class="nav-separator">|</span>
+                <a href="sports.html" class="nav-link active">SPORTS</a>
+                <span class="nav-separator">|</span>
+                <a href="propaganda.html" class="nav-link">PROPAGANDA LAB</a>
+                <span class="nav-separator">|</span>
+                <a href="wars.html" class="nav-link">WARS & POWER</a>
+
+                <button id="themeToggleBtn" class="theme-toggle-top" type="button" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Sports</h1>
+            <p>Deep analysis of sports news, transfers, and player movements</p>
+        </div>
+
+        <!-- Sports Sub-tabs -->
+        <div class="sports-tabs">
+            <button class="sports-tab active" data-sport="soccer">Soccer</button>
+            <button class="sports-tab" data-sport="nfl">NFL</button>
+            <button class="sports-tab" data-sport="basketball">Basketball</button>
+            <button class="sports-tab" data-sport="tennis">Tennis</button>
+            <button class="sports-tab" data-sport="cricket">Cricket</button>
+        </div>
+
+        <!-- Sports Content -->
+        <div class="sports-content">
+            <div id="sports-feed" class="explainers-grid">
+                <div class="loading-spinner">Loading sports news…</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-divider"></div>
+            <div class="footer-links">
+                <a href="#" class="footer-link" data-info="about">About</a>
+                <span class="footer-separator">|</span>
+                <a href="#" class="footer-link" data-info="terms">Terms</a>
+                <span class="footer-separator">|</span>
+                <a href="contact.html" class="footer-link">Contact</a>
+                <span class="footer-separator">|</span>
+                <a href="#" class="footer-link" data-info="privacy">Privacy</a>
+            </div>
+            <div class="footer-copyright">
+                © 2024 The Terrific. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Info Modal -->
+    <div id="infoModal" class="info-modal hidden">
+        <div class="info-modal-box">
+            <span class="close-info" onclick="closeInfoModal()">&times;</span>
+            <div id="infoContent"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts.js"></script>
+    <script src="js/themes.js"></script>
+    <script src="js/infoModal.js"></script>
+    <script src="js/sports.js"></script>
+</body>
+</html>

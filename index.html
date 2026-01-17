@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geopolitical Analysis Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <div class="nav-header">
+                <div class="logo">THE DEEPREAD</div>
+                <div class="tagline">[In-depth Analysis • Global Insights • Breaking Stories]</div>
+            </div>
+            <div class="nav-divider"></div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">HOME</a>
+                <span class="nav-separator">|</span>
+                <a href="memes.html" class="nav-link">MEMES</a>
+                <span class="nav-separator">|</span>
+                <a href="explainers.html" class="nav-link">EXPLAINERS</a>
+                <span class="nav-separator">|</span>
+                <a href="sports.html" class="nav-link">SPORTS</a>
+                <span class="nav-separator">|</span>
+                <a href="propaganda.html" class="nav-link">PROPAGANDA LAB</a>
+                <span class="nav-separator">|</span>
+                <a href="wars.html" class="nav-link">WARS & POWER</a>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <button id="themeToggleBtn" class="theme-toggle-top" type="button" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </nav>
+
+
+        <main class="content">
+            <section class="dialog dialog--full" id="trendingDialog">
+                <h2><i class="fas fa-fire"></i> Trending Now</h2>
+                <div class="dialog-body">
+                    <div class="slideshow-container">
+                        <div class="slides">
+                            <!-- Slides will be populated by JavaScript -->
+                        </div>
+                        <button class="slide-btn prev" onclick="changeSlide(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="slide-btn next" onclick="changeSlide(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <div class="slide-dots">
+                            <!-- Dots will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                <a href="explainers.html" class="view-all">View All Explainers →</a>
+            </section>
+
+            <section class="dialog dialog--full" id="warsDialog">
+                <h2><i class="fas fa-globe-americas"></i> Wars & Power</h2>
+                <div class="dialog-body">
+                    <div class="slideshow-container">
+                        <div class="slides">
+                            <!-- Wars slides will be populated by JavaScript -->
+                        </div>
+                        <button class="slide-btn prev" onclick="changeWarsSlide(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="slide-btn next" onclick="changeWarsSlide(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <div class="wars-dots">
+                            <!-- Dots will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                <a href="wars.html" class="view-all">View All Wars & Power →</a>
+            </section>
+
+            <section class="dialog dialog--full" id="sportsDialog">
+                <h2><i class="fas fa-football-ball"></i> Sports News</h2>
+                <div class="dialog-body">
+                    <div class="slideshow-container">
+                        <div class="slides">
+                            <!-- Sports slides will be populated by JavaScript -->
+                        </div>
+                        <button class="slide-btn prev" onclick="changeSportsSlide(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="slide-btn next" onclick="changeSportsSlide(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <div class="slide-dots">
+                            <!-- Sports dots will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                <a href="sports.html" class="view-all">View All Sports →</a>
+            </section>
+
+            </main>
+        
+        <!-- Footer -->
+        <footer class="site-footer">
+            <div class="footer-content">
+                <div class="footer-divider"></div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link" data-info="about">About</a>
+                    <span class="footer-separator">|</span>
+                    <a href="#" class="footer-link" data-info="terms">Terms</a>
+                    <span class="footer-separator">|</span>
+                    <a href="#" class="footer-link" data-info="privacy">Privacy</a>
+                    <span class="footer-separator">|</span>
+                    <a href="#" class="footer-link" data-info="contact">Contact</a>
+                </div>
+                <div class="footer-copyright">
+                    THE DEEPREAD &copy; 2025 — In-depth Analysis • Global Insights • Breaking Stories
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ===== INFO MODAL ===== -->
+    <div id="infoModal" class="info-modal hidden">
+      <div class="info-modal-box">
+        <span class="close-info">&times;</span>
+        <h2 id="infoTitle"></h2>
+        <div id="infoContent"></div>
+      </div>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script src="js/trending.js"></script>
+    <script src="js/sports-trending.js"></script>
+    <script src="js/home-video.js"></script>
+    <script src="js/themes.js"></script>
+    <script src="js/scroll-to-top.js"></script>
+    <script src="js/infoModal.js"></script>
+    <script src="js/wars-trending.js"></script>
+    <style>
+        body, p, h1, h2, h3, h4, h5, h6, span, div {
+            cursor: default !important;
+        }
+        button, .trend-item, a {
+            cursor: pointer !important;
+        }
+    </style>
+
+</body>
+</html>

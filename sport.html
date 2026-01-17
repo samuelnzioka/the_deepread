@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sports Analysis | The Terrific</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="main-nav">
+      <div class="nav-header">
+        <div class="logo">THE DEEPREAD</div>
+        <div class="tagline">[In-depth Analysis • Global Insights • Breaking Stories]</div>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">HOME</a>
+        <span class="nav-separator">|</span>
+        <a href="memes.html" class="nav-link">MEMES</a>
+        <span class="nav-separator">|</span>
+        <a href="explainers.html" class="nav-link">EXPLAINERS</a>
+        <span class="nav-separator">|</span>
+        <a href="sports.html" class="nav-link active">SPORTS</a>
+        <span class="nav-separator">|</span>
+        <a href="propaganda.html" class="nav-link">PROPAGANDA LAB</a>
+        <span class="nav-separator">|</span>
+        <a href="wars.html" class="nav-link">WARS & POWER</a>
+
+        <button id="themeToggleBtn" class="theme-toggle-top" type="button" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search...">
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="content explainer-page">
+      <div class="explainer-header">
+        <button id="goBackBtn" class="go-back-btn">
+          <i class="fas fa-arrow-left"></i> Go Back to Sports
+        </button>
+      </div>
+      <article id="sport-article"></article>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="footer-content">
+        <div class="footer-divider"></div>
+        <div class="footer-links">
+          <a href="#" class="footer-link">About</a>
+          <span class="footer-separator">|</span>
+          <a href="contact.html" class="footer-link">Contact</a>
+          <span class="nav-separator">|</span>
+          <a href="#" class="footer-link">Terms</a>
+          <span class="footer-separator">|</span>
+
+          <a href="#" class="footer-link">Glossary</a>
+        </div>
+        <div class="footer-copyright">
+          THE TERRIFIC 2025 — Memes, Geopolitics & Propaganda Science
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/sport.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/scroll-to-top.js"></script>
+</body>
+</html>

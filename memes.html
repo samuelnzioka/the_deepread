@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memes - The Terrific</title>
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <div class="nav-header">
+                <div class="logo">THE DEEPREAD</div>
+                <div class="tagline">[In-depth Analysis • Global Insights • Breaking Stories]</div>
+            </div>
+
+            <div class="nav-divider"></div>
+
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">HOME</a>
+                <span class="nav-separator">|</span>
+
+                <a href="memes.html" class="nav-link active">MEMES</a>
+                <span class="nav-separator">|</span>
+
+                <a href="explainers.html" class="nav-link">EXPLAINERS</a>
+                <span class="nav-separator">|</span>
+
+                <a href="sports.html" class="nav-link">SPORTS</a>
+                <span class="nav-separator">|</span>
+
+                <a href="propaganda.html" class="nav-link">PROPAGANDA LAB</a>
+                <span class="nav-separator">|</span>
+
+                <a href="wars.html" class="nav-link">WARS & POWER</a>
+
+                <button id="themeToggleBtn" class="theme-toggle-top" type="button" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="page-header">
+                <h1><i class="fas fa-fire"></i> Geopolitical Memes</h1>
+                <p>Latest viral memes analyzing global power dynamics and propaganda</p>
+            </div>
+
+            <div class="memes-controls">
+              <button onclick="loadMemes()">Load more memes</button>
+              <button onclick="loadMemes(true)">🔄 Refresh</button>
+            </div>
+
+            <section id="memes-feed" class="memes-grid">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i> Loading memes...
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="site-footer">
+            <div class="footer-content">
+                <div class="footer-divider"></div>
+
+                <div class="footer-links">
+                    <a href="#" class="footer-link">About</a>
+                    <span class="footer-separator">|</span>
+
+                    <a href="#" class="footer-link">Contact</a>
+                    <span class="footer-separator">|</span>
+
+                    <a href="#" class="footer-link">Terms</a>
+                    <span class="footer-separator">|</span>
+
+                    <a href="#" class="footer-link">Become a Contributor</a>
+                </div>
+
+                <div class="footer-copyright">
+                    THE DEEPREAD © 2025 — In-depth Analysis • Global Insights • Breaking Stories
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/scripts.js"></script>
+    <script src="js/memes.js"></script>
+    <script src="js/themes.js"></script>
+    <script src="js/scroll-to-top.js"></script>
+
+    <!-- Meme Modal -->
+    <div id="memeModal" class="meme-modal hidden">
+      <div class="meme-modal-content">
+        <span class="close-modal">&times;</span>
+
+        <img id="modalImage" src="" alt="Meme">
+        <h2 id="modalTitle"></h2>
+        <p id="modalSubreddit"></p>
+
+        <a id="modalLink" href="#" target="_blank">
+          View on Reddit →
+        </a>
+      </div>
+    </div>
+
+</body>
+</html>

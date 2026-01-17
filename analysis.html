@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Full Analysis | The Terrific</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="main-nav">
+      <div class="nav-header">
+        <div class="logo">THE DEEPREAD</div>
+        <div class="tagline">[In-depth Analysis • Global Insights • Breaking Stories]</div>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">HOME</a>
+        <span class="nav-separator">|</span>
+        <a href="memes.html" class="nav-link">MEMES</a>
+        <span class="nav-separator">|</span>
+        <a href="explainers.html" class="nav-link active">EXPLAINERS</a>
+        <span class="nav-separator">|</span>
+        <a href="propaganda.html" class="nav-link">PROPAGANDA LAB</a>
+        <span class="nav-separator">|</span>
+        <a href="wars.html" class="nav-link">WARS & POWER</a>
+
+        <button id="themeToggleBtn" class="theme-toggle-top" type="button" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="content">
+      <div class="analysis-container">
+        <p id="loading">Loading analysis…</p>
+        
+        <div id="analysis-content" style="display: none;">
+          <button onclick="window.close()" class="back-btn">← Back to Explainers</button>
+          
+          <div class="analysis-header">
+            <h1 id="analysis-title"></h1>
+            <div class="analysis-meta">
+              <span id="analysis-source"></span>
+              <span id="analysis-date"></span>
+            </div>
+          </div>
+
+          <div id="analysis-image" class="analysis-image"></div>
+
+          <div class="analysis-summary">
+            <h2>Summary</h2>
+            <p id="analysis-summary-text"></p>
+          </div>
+
+          <div class="analysis-body">
+            <h2>Full Analysis</h2>
+            <div id="analysis-body-text"></div>
+          </div>
+
+          <div class="analysis-actions">
+            <a id="analysis-url" href="#" target="_blank" class="source-link">
+              Read Original Article →
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const container = document.querySelector(".analysis-container");
+    const loading = document.getElementById("loading");
+    const content = document.getElementById("analysis-content");
+    const params = new URLSearchParams(window.location.search);
+
+    // Get all parameters
+    const id = params.get("id");
+    const title = params.get("title");
+    const image = params.get("image");
+    const summary = params.get("summary");
+    const body = params.get("body");
+    const source = params.get("source");
+    const published = params.get("published");
+    const url = params.get("url");
+
+    if (!id || !title) {
+      container.innerHTML = "<p>Invalid analysis parameters.</p>";
+    } else {
+      // Hide loading and show content
+      loading.style.display = "none";
+      content.style.display = "block";
+
+      // Populate the content
+      document.getElementById("analysis-title").textContent = decodeURIComponent(title);
+      document.getElementById("analysis-source").textContent = decodeURIComponent(source || "Unknown source");
+      document.getElementById("analysis-date").textContent = published ? new Date(published).toLocaleDateString() : "Unknown date";
+      
+      // Handle image
+      const imageContainer = document.getElementById("analysis-image");
+      if (image && image !== "null" && image !== "") {
+        imageContainer.innerHTML = `<img src="${image}" alt="${decodeURIComponent(title)}">`;
+      } else {
+        imageContainer.style.display = "none";
+      }
+
+      // Handle summary
+      const summaryText = decodeURIComponent(summary || "");
+      if (summaryText && summaryText !== "null" && summaryText !== "") {
+        document.getElementById("analysis-summary-text").textContent = summaryText;
+      } else {
+        document.querySelector(".analysis-summary").style.display = "none";
+      }
+
+      // Handle body
+      const bodyText = decodeURIComponent(body || "");
+      if (bodyText && bodyText !== "null" && bodyText !== "") {
+        // Split by newlines and create paragraphs
+        const paragraphs = bodyText.split("\n").filter(p => p.trim());
+        const bodyHtml = paragraphs.map(p => `<p>${p}</p>`).join("");
+        document.getElementById("analysis-body-text").innerHTML = bodyHtml;
+      } else {
+        document.getElementById("analysis-body-text").innerHTML = "<p>No full content available.</p>";
+      }
+
+      // Handle original URL
+      const urlLink = document.getElementById("analysis-url");
+      if (url && url !== "null" && url !== "") {
+        urlLink.href = decodeURIComponent(url);
+      } else {
+        urlLink.style.display = "none";
+      }
+    }
+  </script>
+
+  <script src="js/themes.js"></script>
+</body>
+</html>
