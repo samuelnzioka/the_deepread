@@ -1791,10 +1791,12 @@ body.dark .dialog-body {
   }
 
   .nav-links {
-    flex-direction: column;
+    flex-direction: row;
     gap: 8px;
     width: 100%;
-    align-items: stretch;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   .nav-link {
@@ -1806,7 +1808,7 @@ body.dark .dialog-body {
   }
 
   .nav-separator {
-    display: none;
+    display: inline;
   }
 
   .search-box {
@@ -1957,13 +1959,16 @@ body.dark .dialog-body {
   }
 
   .footer-links {
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
   }
 
   .footer-link {
-    display: block;
-    margin: 5px 0;
+    display: inline;
+    margin: 0;
   }
 
   .original-link {
