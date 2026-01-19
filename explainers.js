@@ -32,124 +32,94 @@ async function loadExplainers(reset = false) {
   // Simple direct API call
   const url = `https://the-terrific-proxy.onrender.com/api/explainers?page=${page}`;
   console.log(`🔥 Loading explainers from: ${url}`);
+
+  try {
+    const res = await fetch(url);
+    console.log('Response status:', res.status);
+    
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    console.log('RAW API RESPONSE:', data);
+    console.log('Data type:', typeof data);
+    console.log('Data keys:', Object.keys(data));
+    
+    // Handle different possible response structures
+    let explainers = null;
+    
+    if (data.explainers && Array.isArray(data.explainers)) {
+      explainers = data.explainers;
+      console.log('Using data.explainers structure');
+    } else if (data.response && data.response.results && Array.isArray(data.response.results)) {
+      explainers = data.response.results;
+      console.log('Using data.response.results structure');
+    } else if (data.results && Array.isArray(data.results)) {
+      explainers = data.results;
+      console.log('Using data.results structure');
+    } else if (Array.isArray(data)) {
+      explainers = data;
+      console.log('Using direct array structure');
+    } else {
+      console.log('No valid explainers array found in response');
+      console.log('Available properties:', Object.keys(data));
+    }
+    
+    console.log('Explainers array:', explainers);
+    console.log('Explainers type:', typeof explainers);
+    console.log('Explainers length:', explainers ? explainers.length : 'N/A');
+    
+    if (!explainers || explainers.length === 0) {
+      console.log('No explainers found');
       loadingDiv.style.display = "none";
-      container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-muted);">Unable to load fresh explainers. The data source may be outdated.</p>';
+      container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-muted);">No explainers found. The data source may be outdated.</p>';
       return;
     }
     
-    console.log(`Trying URL ${urlIndex + 1}:`, urls[urlIndex]);
+    // Process explainers
+    console.log(`Processing ${explainers.length} explainers`);
+
+    explainers.forEach((item, index) => {
+      const card = document.createElement("div");
+      card.className = "explainer-card";
+      
+      if (reset && index === 0) {
+        card.classList.add("new-content");
+      }
+
+      card.innerHTML = `
+        ${item.image ? `<img src="${item.image}" alt="${item.title}">` : ""}
+        <div class="explainer-body">
+          <h3>${item.title}</h3>
+          <p>${item.summary ? item.summary.substring(0, 200) + '...' : 'No summary available'}</p>
+          <div class="explainer-meta">
+            <span class="source">${item.source}</span>
+            <span class="date">${new Date(item.published).toLocaleDateString()}</span>
+          </div>
+          <button class="read-full-btn" data-id="${item.id}" data-title="${encodeURIComponent(item.title)}" data-image="${item.image || ''}" data-summary="${encodeURIComponent(item.summary || '')}" data-body="${encodeURIComponent(item.body || '')}" data-source="${encodeURIComponent(item.source)}" data-published="${item.published}" data-url="${encodeURIComponent(item.url || '')}">
+            Read Full Analysis →
+          </button>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+
+    // Cache the data for trending
+    localStorage.setItem('cached_explainers', JSON.stringify(explainers));
+    console.log('Cached explainers data to localStorage');
+
+    page++;
+    loading = false;
+    loadingDiv.style.display = "none";
     
-    fetch(urls[urlIndex])
-      .then(res => {
-        console.log('Response status:', res.status);
-        return res.json();
-      })
-    .then(data => {
-        console.log('RAW API RESPONSE:', data);
-        console.log('Data type:', typeof data);
-        console.log('Data keys:', Object.keys(data));
-        
-        // Check if this response has fresh data (last 7 days only)
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        let hasRecentContent = false;
-        let recentCount = 0;
-        
-        // Handle different possible response structures
-        let explainers = null;
-        
-        if (data.explainers && Array.isArray(data.explainers)) {
-          explainers = data.explainers;
-          console.log('Using data.explainers structure');
-        } else if (data.response && data.response.results && Array.isArray(data.response.results)) {
-          explainers = data.response.results;
-          console.log('Using data.response.results structure');
-        } else if (data.results && Array.isArray(data.results)) {
-          explainers = data.results;
-          console.log('Using data.results structure');
-        } else if (Array.isArray(data)) {
-          explainers = data;
-          console.log('Using direct array structure');
-        } else {
-          console.log('No valid explainers array found in response');
-          console.log('Available properties:', Object.keys(data));
-        }
-        
-        console.log('Explainers array:', explainers);
-        console.log('Explainers type:', typeof explainers);
-        console.log('Explainers length:', explainers ? explainers.length : 'N/A');
-        
-        if (!explainers || explainers.length === 0) {
-          console.log('No explainers found or empty array, trying next URL');
-          urlIndex++;
-          tryNextUrl();
-          return;
-        }
-        
-        // CRITICAL: Check for content from last 7 days only
-        recentCount = explainers.filter(item => {
-          const itemDate = new Date(item.published || item.date || item.created);
-          const isRecent = itemDate >= sevenDaysAgo;
-          console.log(`📅 Item "${item.title?.substring(0, 50)}..." - Date: ${itemDate.toISOString().split('T')[0]} - Recent: ${isRecent}`);
-          return isRecent;
-        }).length;
-        
-        hasRecentContent = recentCount > 0;
-        
-        console.log(`🔍 CRITICAL ANALYSIS: Found ${explainers.length} total, ${recentCount} from last 7 days (${sevenDaysAgo.toISOString().split('T')[0]}+)`);
-        
-        if (!hasRecentContent && urlIndex < urls.length - 1) {
-          console.log('❌ No content from last 7 days found, trying next URL');
-          urlIndex++;
-          tryNextUrl();
-          return;
-        }
-        
-        // Process the explainers
-        console.log(`Processing ${explainers.length} explainers`);
-
-        explainers.forEach((item, index) => {
-          const card = document.createElement("div");
-          card.className = "explainer-card";
-          
-          if (reset && index === 0) {
-            card.classList.add("new-content");
-          }
-
-          card.innerHTML = `
-            ${item.image ? `<img src="${item.image}" alt="${item.title}">` : ""}
-            <div class="explainer-body">
-              <h3>${item.title}</h3>
-              <p>${item.summary ? item.summary.substring(0, 200) + '...' : 'No summary available'}</p>
-              <div class="explainer-meta">
-                <span class="source">${item.source}</span>
-                <span class="date">${new Date(item.published).toLocaleDateString()}</span>
-              </div>
-              <button class="read-full-btn" data-id="${item.id}" data-title="${encodeURIComponent(item.title)}" data-image="${item.image || ''}" data-summary="${encodeURIComponent(item.summary || '')}" data-body="${encodeURIComponent(item.body || '')}" data-source="${encodeURIComponent(item.source)}" data-published="${item.published}" data-url="${encodeURIComponent(item.url || '')}">
-                Read Full Analysis →
-              </button>
-            </div>
-          `;
-
-          container.appendChild(card);
-        });
-
-        // Cache the data for trending
-        localStorage.setItem('cached_explainers', JSON.stringify(explainers));
-        console.log('Cached explainers data to localStorage');
-
-        page++;
-        loading = false;
-        loadingDiv.style.display = "none";
-      })
-      .catch(error => {
-        console.error(`URL ${urlIndex + 1} failed:`, error);
-        urlIndex++;
-        tryNextUrl();
-      });
+  } catch (error) {
+    console.error('Error loading explainers:', error);
+    loadingDiv.style.display = "none";
+    container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-muted);">Failed to load explainers. Please try again.</p>';
+    loading = false;
   }
-  
-  // Start trying URLs
-  tryNextUrl();
 }
 
 // Refresh button functionality - fetch and show new content
