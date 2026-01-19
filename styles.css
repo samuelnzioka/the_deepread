@@ -1927,75 +1927,49 @@ body.dark .dialog-body {
 }
 
 /* =========================
-   MOBILE RESPONSIVENESS
+   MOBILE RESPONSIVENESS - SCALE DOWN APPROACH
 ========================= */
 @media (max-width: 768px) {
   body {
     overflow-x: hidden;
+    transform: scale(0.85);
+    transform-origin: top left;
+    width: 117.65%; /* Counteract the scale to maintain full width */
   }
 
   .container {
     width: 100%;
-    padding: 10px;
+    padding: 5px;
     max-width: 100%;
   }
 
-  /* Navigation */
-  .nav-links {
-    flex-direction: column;
-    gap: 6px;
-    align-items: stretch;
-  }
-
-  .nav-link {
-    text-align: center;
-    font-size: 0.85rem;
-    padding: 10px 8px;
-  }
-
-  .nav-separator {
-    display: none;
-  }
-
+  /* Scale down fonts proportionally */
   .logo {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     letter-spacing: 1px;
   }
 
   .tagline {
-    font-size: 0.75rem;
-    margin-bottom: 10px;
+    font-size: 0.8rem;
   }
 
-  .search-box {
-    width: 100%;
-    margin-top: 10px;
+  .nav-link {
+    font-size: 0.8rem;
+    padding: 6px 10px;
   }
 
-  /* Page headers */
   .page-header h1 {
-    font-size: 1.8rem;
+    font-size: 1.9rem;
   }
 
   .page-header p {
     font-size: 1rem;
   }
 
-  /* Dialog boxes */
-  .dialog {
-    width: 100%;
-    padding: 12px;
-  }
-
-  /* Cards & feeds */
-  .card,
-  .video-card,
-  .history-card,
-  .sports-card,
-  .meme-card,
-  .explainer-card {
-    width: 100%;
-    margin-bottom: 15px;
+  /* Keep original grid layouts but scale them down */
+  .memes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
   }
 
   .explainers-grid {
@@ -2003,162 +1977,43 @@ body.dark .dialog-body {
     gap: 15px;
   }
 
-  .memes-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-  }
-
   .sports-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
     padding: 10px;
   }
 
-  /* Slide content */
-  .slide-content {
-    flex-direction: column;
-    gap: 15px;
-    padding: 15px;
+  /* Scale down cards but maintain layout */
+  .card,
+  .video-card,
+  .history-card,
+  .sports-card,
+  .meme-card,
+  .explainer-card {
+    margin-bottom: 15px;
   }
 
-  .trend-item {
-    max-width: 100%;
-    margin-bottom: 10px;
+  /* Scale images proportionally */
+  .meme-card img,
+  .explainer-card img,
+  .sports-card img {
+    height: 180px;
   }
 
-  /* Home sliders */
-  .slides,
-  .sports-slider,
-  .history-feed {
-    scroll-snap-type: x mandatory;
-  }
-
-  /* Buttons */
+  /* Scale buttons */
   .btn,
   .share-btn,
   .read-sports,
   .go-back-btn,
   .back-btn {
-    width: 100%;
-    margin: 5px 0;
-  }
-
-  /* Explainer View Overlay */
-  .explainer-view-overlay,
-  .war-view-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-  }
-
-  .explainer-view-content,
-  .war-view-content {
-    background: var(--bg-card);
-    border-radius: 12px;
-    max-width: 95%;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-    border: 1px solid var(--border-soft);
-  }
-
-  .return-home-btn {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: transform 0.2s ease;
-    font-size: 0.85rem;
-  }
-
-  .return-home-btn:hover {
-    transform: translateY(-2px);
-  }
-
-  .explainer-article,
-  .war-article {
-    padding: 30px 15px 15px 15px;
-  }
-
-  .explainer-article-image,
-  .war-article-image {
-    width: 100%;
-    max-height: 300px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 15px;
-  }
-
-  .explainer-article-title,
-  .war-article-title {
-    font-size: 1.5rem;
-    margin-bottom: 12px;
-    color: var(--text-main);
-  }
-
-  .explainer-article-meta,
-  .war-article-meta {
-    margin-bottom: 15px;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-  }
-
-  .explainer-article-body,
-  .war-article-body {
-    line-height: 1.5;
-    margin-bottom: 15px;
-    color: var(--text-main);
-    font-size: 0.95rem;
-  }
-
-  .explainer-article-body p,
-  .war-article-body p {
-    margin-bottom: 12px;
-  }
-
-  .original-link {
-    background: var(--accent);
-    color: #000;
-    text-decoration: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    display: inline-block;
-    transition: transform 0.2s ease;
-    width: 100%;
-    text-align: center;
-  }
-
-  .original-link:hover {
-    transform: translateY(-2px);
+    font-size: 0.9rem;
+    padding: 8px 16px;
   }
 
   /* Prevent side squeezing */
   * {
     max-width: 100%;
     box-sizing: border-box;
-  }
-
-  /* Theme toggle button */
-  .theme-toggle-top {
-    margin-top: 10px;
-    align-self: center;
   }
 }
 
