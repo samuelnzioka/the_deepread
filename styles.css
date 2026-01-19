@@ -1939,7 +1939,7 @@ body.dark .dialog-body {
 
   .container {
     width: 100%;
-    padding: 5px;
+    padding: 10px;
     max-width: 100%;
   }
 
@@ -2015,6 +2015,345 @@ body.dark .dialog-body {
     max-width: 100%;
     box-sizing: border-box;
   }
+}
+
+/* =========================
+   MOBILE RESPONSIVENESS
+========================= */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .container {
+    width: 100%;
+    padding: 10px;
+    max-width: 100%;
+  }
+
+  /* Navigation */
+  .nav-links {
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+  }
+
+  .nav-link {
+    text-align: center;
+    font-size: 0.85rem;
+    padding: 10px 8px;
+  }
+
+  .nav-separator {
+    display: none;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  .tagline {
+    font-size: 0.75rem;
+    margin-bottom: 10px;
+  }
+
+  .search-box {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  /* Page headers */
+  .page-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .page-header p {
+    font-size: 1rem;
+  }
+
+  /* Dialog boxes */
+  .dialog {
+    width: 100%;
+    padding: 12px;
+  }
+
+  /* Cards & feeds */
+  .card,
+  .video-card,
+  .history-card,
+  .sports-card,
+  .meme-card,
+  .explainer-card {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .explainers-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .memes-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .sports-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 10px;
+  }
+
+  /* Slide content */
+  .slide-content {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .trend-item {
+    max-width: 100%;
+    margin-bottom: 10px;
+  }
+
+  /* Home sliders */
+  .slides,
+  .sports-slider,
+  .history-feed {
+    scroll-snap-type: x mandatory;
+  }
+
+  /* Buttons */
+  .btn,
+  .share-btn,
+  .read-sports,
+  .go-back-btn,
+  .back-btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+
+  /* Explainer View Overlay */
+  .explainer-view-overlay,
+  .war-view-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .explainer-view-content,
+  .war-view-content {
+    background: var(--bg-card);
+    border-radius: 12px;
+    max-width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    border: 1px solid var(--border-soft);
+  }
+
+  .return-home-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform 0.2s ease;
+    font-size: 0.85rem;
+  }
+
+  .return-home-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .explainer-article,
+  .war-article {
+    padding: 30px 15px 15px 15px;
+  }
+
+  .explainer-article-image,
+  .war-article-image {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 15px;
+  }
+
+  .explainer-article-title,
+  .war-article-title {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+    color: var(--text-main);
+  }
+
+  .explainer-article-meta,
+  .war-article-meta {
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .explainer-article-body,
+  .war-article-body {
+    line-height: 1.5;
+    margin-bottom: 15px;
+    color: var(--text-main);
+    font-size: 0.95rem;
+  }
+
+  .explainer-article-body p,
+  .war-article-body p {
+    margin-bottom: 12px;
+  }
+
+  .original-link {
+    background: var(--accent);
+    color: #000;
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    display: inline-block;
+    transition: transform 0.2s ease;
+    width: 100%;
+    text-align: center;
+  }
+
+  .original-link:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Prevent side squeezing */
+  * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Theme toggle button */
+  .theme-toggle-top {
+    margin-top: 10px;
+    align-self: center;
+  }
+}
+
+/* =========================
+   DESKTOP-FIRST MOBILE APPROACH
+========================= */
+
+/* 1. Global fixes (prevents squeezing) */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* 2. Keep navbar HORIZONTAL on phones */
+@media (max-width: 768px) {
+  .nav-links,
+  nav ul {
+    display: flex;
+    flex-direction: row;      /* FORCE horizontal */
+    gap: 14px;
+    overflow-x: auto;         /* Allow swipe */
+    white-space: nowrap;
+    scrollbar-width: none;    /* Firefox */
+  }
+
+  nav ul::-webkit-scrollbar {
+    display: none;            /* Chrome */
+  }
+
+  nav li {
+    flex: 0 0 auto;
+  }
+}
+
+/* 3. Prevent nav from breaking into multiple lines */
+@media (max-width: 768px) {
+  header,
+  nav {
+    width: 100%;
+    overflow-x: hidden;
+  }
+}
+
+/* 4. Keep content cards horizontal (Trending section) */
+@media (max-width: 768px) {
+  .cards,
+  .trending-cards,
+  .memes-grid {
+    display: flex;
+    flex-direction: row;     /* KEEP horizontal */
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .card {
+    min-width: 280px;        /* Controls card size */
+    scroll-snap-align: start;
+  }
+}
+
+/* 5. Scale text slightly (instead of stacking) */
+@media (max-width: 768px) {
+  body {
+    font-size: 14.5px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+}
+
+/* 6. Fix header spacing (important) */
+@media (max-width: 768px) {
+  header {
+    padding: 14px;
+  }
+
+  .logo {
+    font-size: 1.6rem;
+  }
+}
+
+/* 7. Make search bar behave properly */
+@media (max-width: 768px) {
+  .search-box {
+    max-width: 160px;
+    flex-shrink: 0;
+  }
+}
+
+/* 8. Images scale, not squeeze */
+img {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
 }
 
 /* =========================
