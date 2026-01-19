@@ -34,6 +34,8 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main);
   line-height: 1.6;
+  margin: 0;
+  overflow-x: hidden;
   min-height: 100vh;
   cursor: auto;
 }
@@ -172,6 +174,14 @@ p, h1, h2, h3, h4, h5, h6, span, div {
   color: var(--text-muted);
   font-weight: 600;
   display: none;
+}
+
+/* =========================
+   RESPONSIVE IMAGES
+========================= */
+img {
+  max-width: 100%;
+  height: auto;
 }
 
 /* =========================
@@ -1049,6 +1059,7 @@ body.dark .dialog-body {
   margin-bottom: 12px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -2494,4 +2505,90 @@ body.dark .dialog-body {
 
 .dark-mode .new-content::before {
   background: #66BB6A;
+}
+
+/* =========================
+   SMALL PHONES
+========================= */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+
+  .container {
+    padding: 8px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  .logo {
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+  }
+
+  .tagline {
+    font-size: 0.7rem;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .nav-link {
+    font-size: 0.8rem;
+    padding: 8px 6px;
+  }
+
+  .page-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .page-header p {
+    font-size: 0.9rem;
+  }
+
+  .memes-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .explainers-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .sports-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .meme-card img,
+  .explainer-card img,
+  .sports-card img {
+    height: 180px;
+  }
+
+  .share-btn,
+  .btn,
+  .go-back-btn {
+    font-size: 0.8rem;
+    padding: 10px 16px;
+  }
+
+  .refresh-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #refreshBtn {
+    width: 100%;
+    font-size: 0.85rem;
+  }
 }
