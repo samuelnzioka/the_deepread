@@ -318,26 +318,31 @@ img {
 .share-menu .fas.fa-link { color: var(--accent); }
 
 /* =========================
-   🎈 ANIMATED BUBBLE BUTTONS
+   ANIMATED BUBBLE BUTTONS
 ========================= */
 .memes-controls button,
 .explainer-controls button,
-.read-full-btn {
+.read-full-btn,
+.bubble-btn {
   background: var(--accent);
   color: #000;
   border: none;
-  padding: 12px 18px;
-  border-radius: 999px;
-  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-size: 0.95rem;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .memes-controls button::after,
 .explainer-controls button::after,
-.read-full-btn::after {
+.read-full-btn::after,
+.bubble-btn::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -348,14 +353,16 @@ img {
 
 .memes-controls button:hover,
 .explainer-controls button:hover,
-.read-full-btn:hover {
+.read-full-btn:hover,
+.bubble-btn:hover {
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 10px 25px rgba(0,0,0,0.25);
 }
 
 .memes-controls button:hover::after,
 .explainer-controls button:hover::after,
-.read-full-btn:hover::after {
+.read-full-btn:hover::after,
+.bubble-btn:hover::after {
   opacity: 1;
 }
 
