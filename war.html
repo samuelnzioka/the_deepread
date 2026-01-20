@@ -123,7 +123,7 @@
             <div class="explainer-content">
               ${article.image ? `<img src="${article.image}" alt="${article.title}" class="explainer-image" />` : ""}
               <h1 class="explainer-title">${article.title}</h1>
-              <div class="explainer-body">${article.body}</div>
+              <div class="explainer-body">${article.body || article.summary || ""}</div>
             </div>
           `;
 
