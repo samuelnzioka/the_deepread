@@ -78,13 +78,42 @@
     if (!id) {
       document.getElementById("analysis").innerHTML = "<p>No article ID specified.</p>";
     } else {
-      fetch(`https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(id)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) {
-            throw new Error(data.error);
+      (async () => {
+        try {
+          let page = 1;
+          let hasMore = true;
+          let article = null;
+
+          while (hasMore && page <= 10 && !article) {
+            const res = await fetch(`https://the-terrific-proxy.onrender.com/api/wars?page=${page}`);
+            const contentType = res.headers.get("content-type") || "";
+
+            if (!res.ok) {
+              throw new Error(`HTTP error! status: ${res.status}`);
+            }
+
+            if (!contentType.includes("application/json")) {
+              const text = await res.text();
+              throw new Error(`Unexpected response from server: ${text.slice(0, 60)}`);
+            }
+
+            const data = await res.json();
+
+            if (data?.error) {
+              throw new Error(data.error);
+            }
+
+            const articles = Array.isArray(data?.articles) ? data.articles : [];
+            article = articles.find(a => String(a.id) === String(id));
+
+            hasMore = !!data?.hasMore;
+            page += 1;
           }
-          
+
+          if (!article) {
+            throw new Error("Article not found.");
+          }
+
           document.getElementById("analysis").innerHTML = `
             <div class="explainer-header">
               <button id="goBackBtn" class="go-back-btn">
@@ -92,18 +121,16 @@
               </button>
             </div>
             <div class="explainer-content">
-              ${data.image ? `<img src="${data.image}" alt="${data.title}" class="explainer-image" />` : ""}
-              <h1 class="explainer-title">${data.title}</h1>
-              <div class="explainer-body">${data.body}</div>
+              ${article.image ? `<img src="${article.image}" alt="${article.title}" class="explainer-image" />` : ""}
+              <h1 class="explainer-title">${article.title}</h1>
+              <div class="explainer-body">${article.body}</div>
             </div>
           `;
 
-          // Add go back functionality
           document.getElementById("goBackBtn").addEventListener("click", () => {
             window.location.href = "wars.html";
           });
-        })
-        .catch(err => {
+        } catch (err) {
           console.error("Error loading war analysis:", err);
           document.getElementById("analysis").innerHTML = `
             <div class="error-message">
@@ -114,7 +141,8 @@
               </button>
             </div>
           `;
-        });
+        }
+      })();
     }
   </script>
 </body>
