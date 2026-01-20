@@ -80,38 +80,64 @@
     } else {
       (async () => {
         try {
-          let page = 1;
-          let hasMore = true;
           let article = null;
 
-          while (hasMore && page <= 10 && !article) {
-            const res = await fetch(`https://the-terrific-proxy.onrender.com/api/wars?page=${page}`);
-            const contentType = res.headers.get("content-type") || "";
+          // Prefer full-article endpoint (requires proxy redeploy)
+          const fullRes = await fetch(
+            `https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(id)}`
+          );
 
-            if (!res.ok) {
-              throw new Error(`HTTP error! status: ${res.status}`);
+          // If the endpoint doesn't exist yet on the deployed proxy, fall back to list lookup
+          if (fullRes.status !== 404) {
+            const contentType = fullRes.headers.get("content-type") || "";
+
+            if (!fullRes.ok) {
+              throw new Error(`HTTP error! status: ${fullRes.status}`);
             }
 
             if (!contentType.includes("application/json")) {
-              const text = await res.text();
+              const text = await fullRes.text();
               throw new Error(`Unexpected response from server: ${text.slice(0, 60)}`);
             }
 
-            const data = await res.json();
+            article = await fullRes.json();
 
-            if (data?.error) {
-              throw new Error(data.error);
+            if (article?.error) {
+              throw new Error(article.error);
+            }
+          } else {
+            // Fallback: find the article via paginated list endpoint
+            let page = 1;
+            let hasMore = true;
+
+            while (hasMore && page <= 10 && !article) {
+              const res = await fetch(`https://the-terrific-proxy.onrender.com/api/wars?page=${page}`);
+              const contentType = res.headers.get("content-type") || "";
+
+              if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+              }
+
+              if (!contentType.includes("application/json")) {
+                const text = await res.text();
+                throw new Error(`Unexpected response from server: ${text.slice(0, 60)}`);
+              }
+
+              const data = await res.json();
+              if (data?.error) {
+                throw new Error(data.error);
+              }
+
+              const articles = Array.isArray(data?.articles) ? data.articles : [];
+              article = articles.find(a => String(a.id) === String(id));
+
+              hasMore = !!data?.hasMore;
+              page += 1;
             }
 
-            const articles = Array.isArray(data?.articles) ? data.articles : [];
-            article = articles.find(a => String(a.id) === String(id));
-
-            hasMore = !!data?.hasMore;
-            page += 1;
-          }
-
-          if (!article) {
-            throw new Error("Article not found.");
+            if (!article) {
+              throw new Error("Article not found.");
+            }
           }
 
           document.getElementById("analysis").innerHTML = `
@@ -123,7 +149,7 @@
             <div class="explainer-content">
               ${article.image ? `<img src="${article.image}" alt="${article.title}" class="explainer-image" />` : ""}
               <h1 class="explainer-title">${article.title}</h1>
-              <div class="explainer-body">${article.body || article.summary || ""}</div>
+              <div class="explainer-body">${article.body || article.bodyText || article.summary || ""}</div>
             </div>
           `;
 
