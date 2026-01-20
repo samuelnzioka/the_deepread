@@ -158,6 +158,9 @@ function renderWarsSlides(slides) {
 }
 
 function showWarOnHomepage(war) {
+  // Preserve scroll position so we can return to the same spot
+  window.warHomeScrollY = window.scrollY || 0;
+
   // Hide all dialogs
   document.querySelectorAll('.dialog').forEach(dialog => {
     dialog.style.display = 'none';
@@ -168,7 +171,7 @@ function showWarOnHomepage(war) {
   warView.className = 'war-view-overlay';
   warView.innerHTML = `
     <div class="war-view-content">
-      <button class="return-home-btn" onclick="closeWarView()">
+      <button class="return-home-btn bubble-btn" onclick="closeWarView()">
         <i class="fas fa-arrow-left"></i> Return to Home
       </button>
       <div class="war-article">
@@ -202,6 +205,8 @@ function closeWarView() {
   document.querySelectorAll('.dialog').forEach(dialog => {
     dialog.style.display = 'block';
   });
+
+  window.scrollTo(0, window.warHomeScrollY || 0);
 }
 
 function changeWarsSlide(direction) {

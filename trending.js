@@ -197,28 +197,50 @@ function startAutoScroll() {
 }
 
 // Refresh trending data every 2 hours
-function showExplainerOnHomepage(explainer) {
+let explainerHomeScrollY = 0;
+
+async function showExplainerOnHomepage(explainer) {
+  explainerHomeScrollY = window.scrollY || 0;
+
   // Hide all dialogs
   document.querySelectorAll('.dialog').forEach(dialog => {
     dialog.style.display = 'none';
   });
+
+  let fullExplainer = explainer;
+  try {
+    if (explainer && explainer.id) {
+      const res = await fetch(`https://the-terrific-proxy.onrender.com/api/explainers/${encodeURIComponent(explainer.id)}`);
+      if (res.ok) {
+        fullExplainer = await res.json();
+      }
+    }
+  } catch (e) {
+    fullExplainer = explainer;
+  }
   
   // Create explainer view overlay
   const explainerView = document.createElement('div');
   explainerView.className = 'explainer-view-overlay';
   explainerView.innerHTML = `
     <div class="explainer-view-content">
-      <button class="return-home-btn" onclick="closeExplainerView()">
+      <button class="return-home-btn bubble-btn" onclick="closeExplainerView()">
         <i class="fas fa-arrow-left"></i> Return to Home
       </button>
       <div class="explainer-article">
-        ${explainer.image ? `<img src="${explainer.image}" class="explainer-article-image" alt="${explainer.title}">` : ''}
-        <h1 class="explainer-article-title">${explainer.title}</h1>
+        ${fullExplainer.image ? `<img src="${fullExplainer.image}" class="explainer-article-image" alt="${fullExplainer.title}">` : ''}
+        <h1 class="explainer-article-title">${fullExplainer.title}</h1>
         <div class="explainer-article-meta">
-          <span class="source">Source: ${explainer.source}</span>
+          <span class="source">Source: ${fullExplainer.source || explainer.source || 'Unknown'}</span>
         </div>
         <div class="explainer-article-body">
-          <p>${explainer.summary || 'No summary available'}</p>
+          ${(fullExplainer.background || fullExplainer.happening || fullExplainer.globalImpact || fullExplainer.whyItMatters || fullExplainer.outlook) ? `
+            ${fullExplainer.background ? `<h2>Background</h2><p>${fullExplainer.background}</p>` : ''}
+            ${fullExplainer.happening ? `<h2>What’s Happening</h2><p>${fullExplainer.happening}</p>` : ''}
+            ${fullExplainer.globalImpact ? `<h2>Global Impact</h2><p>${fullExplainer.globalImpact}</p>` : ''}
+            ${fullExplainer.whyItMatters ? `<h2>Why It Matters</h2><p>${fullExplainer.whyItMatters}</p>` : ''}
+            ${fullExplainer.outlook ? `<h2>What Comes Next</h2><p>${fullExplainer.outlook}</p>` : ''}
+          ` : `<p>${fullExplainer.summary || explainer.summary || 'No summary available'}</p>`}
         </div>
         <a href="${explainer.url}" class="original-link" target="_blank">
           View Original Article →
@@ -242,6 +264,8 @@ function closeExplainerView() {
   document.querySelectorAll('.dialog').forEach(dialog => {
     dialog.style.display = 'block';
   });
+
+  window.scrollTo(0, explainerHomeScrollY || 0);
 }
 
 function startRefreshInterval() {
