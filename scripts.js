@@ -118,7 +118,7 @@ async function loadWarsAnalysis() {
         
         const articleCard = document.createElement('div');
         articleCard.className = 'trend-item';
-        articleCard.onclick = () => window.location.href = `war.html?id=${encodeURIComponent(article.id)}`;
+        articleCard.onclick = () => showWarsArticleModal(article);
         
         articleCard.innerHTML = `
           <div class="trend-item-image">
@@ -454,8 +454,8 @@ function openSearchResult(result) {
       break;
       
     case 'wars':
-      // Navigate to war analysis
-      window.location.href = `war.html?id=${result.id}`;
+      // Show wars article modal on homepage
+      showWarsArticleModal(result);
       break;
       
     case 'youtube':
@@ -466,6 +466,108 @@ function openSearchResult(result) {
     default:
       console.log('Unknown result source:', result.source);
   }
+}
+
+function showWarsArticleModal(article) {
+  // Store scroll position
+  const warsHomeScrollY = window.scrollY;
+  
+  // Hide all dialogs
+  document.querySelectorAll('.dialog').forEach(dialog => {
+    dialog.style.display = 'none';
+  });
+  
+  // Fetch full article content first
+  (async () => {
+    try {
+      const res = await fetch(
+        `https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(article.id)}`
+      );
+      const contentType = res.headers.get("content-type") || "";
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      if (!contentType.includes("application/json")) {
+        const text = await res.text();
+        throw new Error(`Unexpected response from server: ${text.slice(0, 60)}`);
+      }
+
+      const fullArticle = await res.json();
+
+      if (fullArticle?.error) {
+        throw new Error(fullArticle.error);
+      }
+
+      // Create wars view overlay (same style as explainers)
+      const warsView = document.createElement('div');
+      warsView.className = 'explainer-view-overlay';
+      warsView.innerHTML = `
+        <div class="explainer-view-content">
+          <button class="return-home-btn bubble-btn" onclick="closeWarsView()">
+            <i class="fas fa-arrow-left"></i> Return to Home
+          </button>
+          <div class="explainer-article">
+            ${fullArticle.image ? `<img src="${fullArticle.image}" class="explainer-article-image" alt="${fullArticle.title}">` : ''}
+            <h1 class="explainer-article-title">${fullArticle.title}</h1>
+            <div class="explainer-article-meta">
+              <span class="source">Source: ${fullArticle.source || article.source || 'Unknown'}</span>
+            </div>
+            <div class="explainer-article-body">
+              ${fullArticle.body || fullArticle.bodyText || fullArticle.summary || 'No content available'}
+            </div>
+            ${fullArticle.url ? `<a href="${fullArticle.url}" class="original-link" target="_blank">View Original Article →</a>` : ''}
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(warsView);
+      document.body.style.overflow = 'hidden';
+      
+      // Store scroll position for return
+      window.warsHomeScrollY = warsHomeScrollY;
+      
+    } catch (err) {
+      console.error("Error loading wars article:", err);
+      
+      // Show error in same overlay style
+      const warsView = document.createElement('div');
+      warsView.className = 'explainer-view-overlay';
+      warsView.innerHTML = `
+        <div class="explainer-view-content">
+          <button class="return-home-btn bubble-btn" onclick="closeWarsView()">
+            <i class="fas fa-arrow-left"></i> Return to Home
+          </button>
+          <div class="explainer-article">
+            <h1 class="explainer-article-title">${article.title}</h1>
+            <div class="explainer-article-body">
+              <p>Failed to load full article. ${err.message}</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(warsView);
+      document.body.style.overflow = 'hidden';
+      window.warsHomeScrollY = warsHomeScrollY;
+    }
+  })();
+}
+
+function closeWarsView() {
+  const warsView = document.querySelector('.explainer-view-overlay');
+  if (warsView) {
+    warsView.remove();
+    document.body.style.overflow = '';
+  }
+  
+  // Show all dialogs again
+  document.querySelectorAll('.dialog').forEach(dialog => {
+    dialog.style.display = 'block';
+  });
+
+  window.scrollTo(0, window.warsHomeScrollY || 0);
 }
 
 function showMemeModal(meme) {

@@ -49,9 +49,9 @@ function getContent(type) {
   switch (type) {
     case "about":
       return {
-        title: "About The Terrific",
+        title: "About The DeepRead",
         body: `
-          <p><strong>The Terrific</strong> is an independent informational and analytical media platform designed to present news summaries, explainers, commentary, and multimedia content relating to geopolitics, propaganda, warfare, international relations, and information influence. All materials published here are intended strictly for educational, journalistic, and research purposes and should not be interpreted as professional, legal, political, or military advice. While we strive to ensure accuracy, timeliness, and reliability of information displayed, we do not guarantee that all content is complete, current, or free from errors, and we disclaim any liability for decisions made based on use of this information. Some content displayed on this site may originate from third-party sources, including external news organizations, video platforms, and public APIs, and all intellectual property rights remain with their respective owners; platform does not claim ownership of such third-party material and uses it in accordance with fair use principles for purposes of commentary, criticism, and education.</p>
+          <p><strong>The DeepRead</strong> is an independent informational and analytical media platform designed to present news summaries, explainers, commentary, and multimedia content relating to geopolitics, propaganda, warfare, international relations, and information influence. All materials published here are intended strictly for educational, journalistic, and research purposes and should not be interpreted as professional, legal, political, or military advice. While we strive to ensure accuracy, timeliness, and reliability of information displayed, we do not guarantee that all content is complete, current, or free from errors, and we disclaim any liability for decisions made based on use of this information. Some content displayed on this site may originate from third-party sources, including external news organizations, video platforms, and public APIs, and all intellectual property rights remain with their respective owners; platform does not claim ownership of such third-party material and uses it in accordance with fair use principles for purposes of commentary, criticism, and education.</p>
         `
       };
 
@@ -67,7 +67,7 @@ function getContent(type) {
       return {
         title: "Privacy Policy",
         body: `
-          <p><strong>Privacy Policy for The Terrific</strong></p>
+          <p><strong>Privacy Policy for The DeepRead</strong></p>
           <p>Your privacy matters to us. This policy explains how The Terrific handles your information and protects your rights when using our independent informational and analytical media platform.</p>
           
           <h3>Information We Collect</h3>

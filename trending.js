@@ -105,11 +105,17 @@ function renderSlides(slides) {
       const trendItem = document.createElement('div');
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
-        console.log('Clicked explainer item:', item);
-        // Store explainer data for homepage display
-        localStorage.setItem('currentExplainer', JSON.stringify(item));
-        // Show explainer on homepage
-        showExplainerOnHomepage(item);
+        console.log('Clicked trending item:', item);
+        
+        // Use appropriate modal based on item type
+        if (item.type && item.type.toLowerCase() === 'war analysis') {
+          // Use wars modal for war analysis items
+          showWarsArticleModal(item);
+        } else {
+          // Use explainer modal for other items
+          localStorage.setItem('currentExplainer', JSON.stringify(item));
+          showExplainerOnHomepage(item);
+        }
       };
       
       trendItem.innerHTML = `
