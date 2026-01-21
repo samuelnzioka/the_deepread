@@ -118,7 +118,7 @@ async function loadWarsAnalysis() {
         
         const articleCard = document.createElement('div');
         articleCard.className = 'trend-item';
-        articleCard.onclick = () => showWarsArticleModal(article);
+        articleCard.onclick = () => showFullAnalysisOnHomepage(article);
         
         articleCard.innerHTML = `
           <div class="trend-item-image">
@@ -454,8 +454,8 @@ function openSearchResult(result) {
       break;
       
     case 'wars':
-      // Show wars article modal on homepage
-      showWarsArticleModal(result);
+      // Show full analysis on homepage (same as explainers)
+      showFullAnalysisOnHomepage(result);
       break;
       
     case 'youtube':
@@ -466,6 +466,101 @@ function openSearchResult(result) {
     default:
       console.log('Unknown result source:', result.source);
   }
+}
+
+// Unified function to show full analysis on homepage for ALL items (same as explainers)
+async function showFullAnalysisOnHomepage(item) {
+  const homeScrollY = window.scrollY || 0;
+
+  // Hide all dialogs
+  document.querySelectorAll('.dialog').forEach(dialog => {
+    dialog.style.display = 'none';
+  });
+
+  let fullItem = item;
+  try {
+    // Fetch full content based on item type
+    if (item.type && item.type.toLowerCase() === 'war analysis') {
+      // Fetch full wars article
+      const res = await fetch(
+        `https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(item.id)}`
+      );
+      if (res.ok) {
+        fullItem = await res.json();
+      }
+    } else if (item.id) {
+      // Fetch full explainer
+      const res = await fetch(
+        `https://the-terrific-proxy.onrender.com/api/explainers/${encodeURIComponent(item.id)}`
+      );
+      if (res.ok) {
+        fullItem = await res.json();
+      }
+    }
+  } catch (e) {
+    console.error('Error fetching full content:', e);
+    fullItem = item;
+  }
+  
+  // Create explainer view overlay (same for ALL items)
+  const itemView = document.createElement('div');
+  itemView.className = 'explainer-view-overlay';
+  itemView.innerHTML = `
+    <div class="explainer-view-content">
+      <button class="return-home-btn bubble-btn" onclick="closeFullAnalysisView()">
+        <i class="fas fa-arrow-left"></i> Return to Home
+      </button>
+      <div class="explainer-article">
+        ${fullItem.image ? `<img src="${fullItem.image}" class="explainer-article-image" alt="${fullItem.title}">` : ''}
+        <h1 class="explainer-article-title">${fullItem.title}</h1>
+        <div class="explainer-article-meta">
+          <span class="source">Source: ${fullItem.source || item.source || 'Unknown'}</span>
+        </div>
+        <div class="explainer-article-body">
+          ${getArticleContent(fullItem, item)}
+        </div>
+        ${fullItem.url || item.url ? `<a href="${fullItem.url || item.url}" class="original-link" target="_blank">View Original Article →</a>` : ''}
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(itemView);
+  document.body.style.overflow = 'hidden';
+  
+  // Store scroll position for return
+  window.fullAnalysisHomeScrollY = homeScrollY;
+}
+
+// Helper function to get article content based on type
+function getArticleContent(fullItem, originalItem) {
+  if (fullItem.type && fullItem.type.toLowerCase() === 'war analysis') {
+    // Wars content
+    return fullItem.body || fullItem.bodyText || fullItem.summary || 'No content available';
+  } else {
+    // Explainer content (structured sections)
+    return (fullItem.background || fullItem.happening || fullItem.globalImpact || fullItem.whyItMatters || fullItem.outlook) ? `
+      ${fullItem.background ? `<h2>Background</h2><p>${fullItem.background}</p>` : ''}
+      ${fullItem.happening ? `<h2>What's Happening</h2><p>${fullItem.happening}</p>` : ''}
+      ${fullItem.globalImpact ? `<h2>Global Impact</h2><p>${fullItem.globalImpact}</p>` : ''}
+      ${fullItem.whyItMatters ? `<h2>Why It Matters</h2><p>${fullItem.whyItMatters}</p>` : ''}
+      ${fullItem.outlook ? `<h2>What Comes Next</h2><p>${fullItem.outlook}</p>` : ''}
+    ` : `<p>${fullItem.summary || originalItem.summary || 'No summary available'}</p>`;
+  }
+}
+
+function closeFullAnalysisView() {
+  const itemView = document.querySelector('.explainer-view-overlay');
+  if (itemView) {
+    itemView.remove();
+    document.body.style.overflow = '';
+  }
+  
+  // Show all dialogs again
+  document.querySelectorAll('.dialog').forEach(dialog => {
+    dialog.style.display = 'block';
+  });
+
+  window.scrollTo(0, window.fullAnalysisHomeScrollY || 0);
 }
 
 function showWarsArticleModal(article) {
