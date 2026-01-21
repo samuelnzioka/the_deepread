@@ -507,7 +507,7 @@ async function showFullAnalysisOnHomepage(item) {
   itemView.className = 'explainer-view-overlay';
   itemView.innerHTML = `
     <div class="explainer-view-content">
-      <button class="return-home-btn bubble-btn" onclick="closeFullAnalysisView()">
+      <button class="bubble-btn" onclick="closeFullAnalysisView()">
         <i class="fas fa-arrow-left"></i> Return to Home
       </button>
       <div class="explainer-article">
@@ -600,7 +600,7 @@ function showWarsArticleModal(article) {
       warsView.className = 'explainer-view-overlay';
       warsView.innerHTML = `
         <div class="explainer-view-content">
-          <button class="return-home-btn bubble-btn" onclick="closeWarsView()">
+          <button class="bubble-btn" onclick="closeWarsView()">
             <i class="fas fa-arrow-left"></i> Return to Home
           </button>
           <div class="explainer-article">
@@ -631,7 +631,7 @@ function showWarsArticleModal(article) {
       warsView.className = 'explainer-view-overlay';
       warsView.innerHTML = `
         <div class="explainer-view-content">
-          <button class="return-home-btn bubble-btn" onclick="closeWarsView()">
+          <button class="bubble-btn" onclick="closeWarsView()">
             <i class="fas fa-arrow-left"></i> Return to Home
           </button>
           <div class="explainer-article">

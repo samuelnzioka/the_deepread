@@ -1,4 +1,4 @@
-// Trending Slideshow - Gets explainers from the explainers page
+// Trending Slideshow - Gets explainers from explainers page
 let currentSlide = 0;
 let trendingData = [];
 let autoScrollInterval;
@@ -8,7 +8,7 @@ async function loadTrendingContent() {
   try {
     console.log('Loading trending content from explainers API...');
     
-    // Always fetch fresh data from the same API as explainers
+    // Always fetch fresh data from same API as explainers
     const explainersResponse = await fetch('https://the-terrific-proxy.onrender.com/api/explainers?page=1');
     
     if (!explainersResponse.ok) {
@@ -222,7 +222,7 @@ async function showExplainerOnHomepage(explainer) {
   explainerView.className = 'explainer-view-overlay';
   explainerView.innerHTML = `
     <div class="explainer-view-content">
-      <button class="return-home-btn bubble-btn" onclick="closeExplainerView()">
+      <button class="bubble-btn" onclick="closeExplainerView()">
         <i class="fas fa-arrow-left"></i> Return to Home
       </button>
       <div class="explainer-article">
@@ -234,7 +234,7 @@ async function showExplainerOnHomepage(explainer) {
         <div class="explainer-article-body">
           ${(fullExplainer.background || fullExplainer.happening || fullExplainer.globalImpact || fullExplainer.whyItMatters || fullExplainer.outlook) ? `
             ${fullExplainer.background ? `<h2>Background</h2><p>${fullExplainer.background}</p>` : ''}
-            ${fullExplainer.happening ? `<h2>What’s Happening</h2><p>${fullExplainer.happening}</p>` : ''}
+            ${fullExplainer.happening ? `<h2>What's Happening</h2><p>${fullExplainer.happening}</p>` : ''}
             ${fullExplainer.globalImpact ? `<h2>Global Impact</h2><p>${fullExplainer.globalImpact}</p>` : ''}
             ${fullExplainer.whyItMatters ? `<h2>Why It Matters</h2><p>${fullExplainer.whyItMatters}</p>` : ''}
             ${fullExplainer.outlook ? `<h2>What Comes Next</h2><p>${fullExplainer.outlook}</p>` : ''}
@@ -290,7 +290,7 @@ async function showFullAnalysisOnHomepage(item) {
   itemView.className = 'explainer-view-overlay';
   itemView.innerHTML = `
     <div class="explainer-view-content">
-      <button class="return-home-btn bubble-btn" onclick="closeFullAnalysisView()">
+      <button class="bubble-btn" onclick="closeFullAnalysisView()">
         <i class="fas fa-arrow-left"></i> Return to Home
       </button>
       <div class="explainer-article">
@@ -359,108 +359,6 @@ function closeExplainerView() {
   });
 
   window.scrollTo(0, explainerHomeScrollY || 0);
-}
-
-function showWarsArticleModal(article) {
-  // Store scroll position
-  const warsHomeScrollY = window.scrollY;
-  
-  // Hide all dialogs
-  document.querySelectorAll('.dialog').forEach(dialog => {
-    dialog.style.display = 'none';
-  });
-  
-  // Fetch full article content first
-  (async () => {
-    try {
-      const res = await fetch(
-        `https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(article.id)}`
-      );
-      const contentType = res.headers.get("content-type") || "";
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      if (!contentType.includes("application/json")) {
-        const text = await res.text();
-        throw new Error(`Unexpected response from server: ${text.slice(0, 60)}`);
-      }
-
-      const fullArticle = await res.json();
-
-      if (fullArticle?.error) {
-        throw new Error(fullArticle.error);
-      }
-
-      // Create wars view overlay (same style as explainers)
-      const warsView = document.createElement('div');
-      warsView.className = 'explainer-view-overlay';
-      warsView.innerHTML = `
-        <div class="explainer-view-content">
-          <button class="return-home-btn bubble-btn" onclick="closeWarsView()">
-            <i class="fas fa-arrow-left"></i> Return to Home
-          </button>
-          <div class="explainer-article">
-            ${fullArticle.image ? `<img src="${fullArticle.image}" class="explainer-article-image" alt="${fullArticle.title}">` : ''}
-            <h1 class="explainer-article-title">${fullArticle.title}</h1>
-            <div class="explainer-article-meta">
-              <span class="source">Source: ${fullArticle.source || article.source || 'Unknown'}</span>
-            </div>
-            <div class="explainer-article-body">
-              ${fullArticle.body || fullArticle.bodyText || fullArticle.summary || 'No content available'}
-            </div>
-            ${fullArticle.url ? `<a href="${fullArticle.url}" class="original-link" target="_blank">View Original Article →</a>` : ''}
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(warsView);
-      document.body.style.overflow = 'hidden';
-      
-      // Store scroll position for return
-      window.warsHomeScrollY = warsHomeScrollY;
-      
-    } catch (err) {
-      console.error("Error loading wars article:", err);
-      
-      // Show error in same overlay style
-      const warsView = document.createElement('div');
-      warsView.className = 'explainer-view-overlay';
-      warsView.innerHTML = `
-        <div class="explainer-view-content">
-          <button class="return-home-btn bubble-btn" onclick="closeWarsView()">
-            <i class="fas fa-arrow-left"></i> Return to Home
-          </button>
-          <div class="explainer-article">
-            <h1 class="explainer-article-title">${article.title}</h1>
-            <div class="explainer-article-body">
-              <p>Failed to load full article. ${err.message}</p>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(warsView);
-      document.body.style.overflow = 'hidden';
-      window.warsHomeScrollY = warsHomeScrollY;
-    }
-  })();
-}
-
-function closeWarsView() {
-  const warsView = document.querySelector('.explainer-view-overlay');
-  if (warsView) {
-    warsView.remove();
-    document.body.style.overflow = '';
-  }
-  
-  // Show all dialogs again
-  document.querySelectorAll('.dialog').forEach(dialog => {
-    dialog.style.display = 'block';
-  });
-
-  window.scrollTo(0, window.warsHomeScrollY || 0);
 }
 
 function startRefreshInterval() {
