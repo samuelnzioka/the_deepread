@@ -60,53 +60,44 @@ function fadeIn(el) {
 }
 
 // ===============================
-// WARS ANALYSIS DIALOG
+// WARS & POWER HOMEPAGE BOX
 // ===============================
-let currentAnalysisSlide = 0;
-let analysisSlides = [];
 
 async function loadWarsAnalysis() {
   try {
     console.log('Loading wars analysis from /api/wars...');
     const response = await fetch('https://the-terrific-proxy.onrender.com/api/wars?page=1');
-    console.log('Wars API response status:', response.status);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log('Wars API response:', data);
     
     if (!data.articles || data.articles.length === 0) {
       console.log('No wars articles found');
       return;
     }
 
-    // Take first 4 articles for homepage and ensure proper structure
+    // Take first 4 articles for homepage previews
     const rawArticles = data.articles.slice(0, 4);
-    console.log('Processing wars articles:', rawArticles);
     
     // Process articles to ensure they have correct structure
     const articles = rawArticles.map(article => ({
-      id: article.id, // ✅ Ensure ID is present
-      type: 'war', // ✅ Add correct type
+      id: article.id,
+      type: 'war',
       title: article.title || 'No title',
       image: article.image || null,
       summary: article.summary || '',
-      source: article.source || 'The Guardian',
-      url: article.url || ''
+      source: article.source || 'The Guardian'
     }));
-    
-    console.log('Processed wars articles with proper structure:', articles);
-    analysisSlides = articles;
 
     // Create slides (2 per slide)
     const slidesContainer = document.querySelector('#analysisDialog .slides');
     const dotsContainer = document.querySelector('#analysisDialog .analysis-dots');
     
     if (!slidesContainer || !dotsContainer) {
-      console.error('Wars analysis containers not found:', { slidesContainer, dotsContainer });
+      console.error('Wars analysis containers not found');
       return;
     }
 
@@ -141,9 +132,10 @@ async function loadWarsAnalysis() {
             ${article.image ? `<img src="${article.image}" alt="${article.title}" />` : ''}
           </div>
           <div class="trend-item-content">
-            <span class="type-badge">${article.type.toUpperCase()}</span>
+            <span class="type-badge">WARS & POWER</span>
             <h4>${article.title}</h4>
             <p>${article.summary?.substring(0, 100) || ''}...</p>
+            <div class="read-more">Read full analysis →</div>
           </div>
         `;
         
@@ -157,7 +149,6 @@ async function loadWarsAnalysis() {
       const dot = document.createElement('span');
       dot.className = 'dot';
       if (i === 0) dot.classList.add('active');
-      dot.onclick = () => showAnalysisSlide(i);
       dotsContainer.appendChild(dot);
     }
 
@@ -165,7 +156,6 @@ async function loadWarsAnalysis() {
     console.error('Error loading wars analysis:', err);
   }
 }
-
 
 // Load wars analysis when page loads
 document.addEventListener('DOMContentLoaded', () => {
