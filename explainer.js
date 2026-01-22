@@ -79,7 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const explainers = data.explainers || data.results || [];
           console.log('Searching for explainer with ID:', id);
           console.log('Available explainers:', explainers.map(e => ({ id: e.id, title: e.title })));
-          const explainer = explainers.find(e => e.id === id);
+          const explainer = explainers.find(e => e.id.trim() === id.trim()) || 
+                         explainers.find(e => e.id.includes(id)) ||
+                         explainers.find(e => id.includes(e.id));
           console.log('Found explainer:', explainer);
           
           if (explainer) {
