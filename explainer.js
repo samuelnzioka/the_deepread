@@ -69,38 +69,56 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       // If we only have an id (e.g. coming from homepage cards), fetch the full explainer first.
       if (id && !title) {
+        // Use the list endpoint to find the explainer by ID
         const res = await fetch(
-          `https://the-terrific-proxy.onrender.com/api/explainers/${encodeURIComponent(id)}`
+          `https://the-terrific-proxy.onrender.com/api/explainers?page=1`
         );
 
         if (res.ok) {
           const data = await res.json();
-          title = data?.title || title;
-          image = data?.image || image;
-          summary = data?.summary || summary;
-          source = data?.source || source;
-          published = data?.published || published;
-          url = data?.url || url;
+          const explainers = data.explainers || data.results || [];
+          const explainer = explainers.find(e => e.id === id);
+          
+          if (explainer) {
+            title = explainer?.title || title;
+            image = explainer?.image || image;
+            summary = explainer?.summary || summary;
+            source = explainer?.source || source;
+            published = explainer?.published || published;
+            url = explainer?.url || url;
 
-          if (data?.background || data?.happening || data?.globalImpact || data?.whyItMatters || data?.outlook) {
-            body = `
-              ${data?.background ? `<h2>Background</h2><p>${data.background}</p>` : ''}
-              ${data?.happening ? `<h2>What's Happening</h2><p>${data.happening}</p>` : ''}
-              ${data?.globalImpact ? `<h2>Global Impact</h2><p>${data.globalImpact}</p>` : ''}
-              ${data?.whyItMatters ? `<h2>Why It Matters</h2><p>${data.whyItMatters}</p>` : ''}
-              ${data?.outlook ? `<h2>What Comes Next</h2><p>${data.outlook}</p>` : ''}
-            `;
+            if (explainer?.background || explainer?.happening || explainer?.globalImpact || explainer?.whyItMatters || explainer?.outlook) {
+              body = `
+                ${explainer?.background ? `<h2>Background</h2><p>${explainer.background}</p>` : ''}
+                ${explainer?.happening ? `<h2>What's Happening</h2><p>${explainer.happening}</p>` : ''}
+                ${explainer?.globalImpact ? `<h2>Global Impact</h2><p>${explainer.globalImpact}</p>` : ''}
+                ${explainer?.whyItMatters ? `<h2>Why It Matters</h2><p>${explainer.whyItMatters}</p>` : ''}
+                ${explainer?.outlook ? `<h2>What Comes Next</h2><p>${explainer.outlook}</p>` : ''}
+              `;
+            } else {
+              body = explainer?.body || explainer?.bodyText || explainer?.content || explainer?.summary || summary;
+              if (body && !String(body).trim().startsWith('<')) {
+                body = `<p>${body}</p>`;
+              }
+            }
+            
+            // NOW render the explainer with the fetched data
+            renderExplainer();
           } else {
-            body = data?.body || data?.bodyText || data?.content || body;
-            if (body && !String(body).trim().startsWith('<')) {
-              body = `<p>${body}</p>`;
+            console.error('Explainer not found with ID:', id);
+            // Show error if explainer not found
+            const explainerContainer = document.getElementById("explainer");
+            if (explainerContainer) {
+              explainerContainer.innerHTML = `
+                <div class="error-message">
+                  <h2>Explainer not found</h2>
+                  <p>The requested explainer could not be found.</p>
+                </div>
+              `;
             }
           }
-          
-          // NOW render the explainer with the fetched data
-          renderExplainer();
         } else {
-          console.error('Failed to fetch explainer:', res.status);
+          console.error('Failed to fetch explainers:', res.status);
           // Show error if fetch failed
           const explainerContainer = document.getElementById("explainer");
           if (explainerContainer) {
