@@ -132,8 +132,8 @@ async function loadWarsAnalysis() {
         const articleCard = document.createElement('div');
         articleCard.className = 'trend-item';
         articleCard.onclick = () => {
-          // Send to full analysis in wars tab (same tab, no new tab)
-          window.location.href = `war.html?id=${encodeURIComponent(article.id)}`;
+          // Simple redirect to wars page (advertisement behavior)
+          window.location.href = `wars.html?id=${encodeURIComponent(article.id)}`;
         };
         
         articleCard.innerHTML = `
