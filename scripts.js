@@ -83,9 +83,22 @@ async function loadWarsAnalysis() {
       return;
     }
 
-    // Take first 4 articles for homepage
-    const articles = data.articles.slice(0, 4);
-    console.log('Processing wars articles:', articles);
+    // Take first 4 articles for homepage and ensure proper structure
+    const rawArticles = data.articles.slice(0, 4);
+    console.log('Processing wars articles:', rawArticles);
+    
+    // Process articles to ensure they have correct structure
+    const articles = rawArticles.map(article => ({
+      id: article.id, // ✅ Ensure ID is present
+      type: 'war', // ✅ Add correct type
+      title: article.title || 'No title',
+      image: article.image || null,
+      summary: article.summary || '',
+      source: article.source || 'The Guardian',
+      url: article.url || ''
+    }));
+    
+    console.log('Processed wars articles with proper structure:', articles);
     analysisSlides = articles;
 
     // Create slides (2 per slide)
@@ -125,7 +138,7 @@ async function loadWarsAnalysis() {
             ${article.image ? `<img src="${article.image}" alt="${article.title}" />` : ''}
           </div>
           <div class="trend-item-content">
-            <span class="type-badge">WAR ANALYSIS</span>
+            <span class="type-badge">${article.type.toUpperCase()}</span>
             <h4>${article.title}</h4>
             <p>${article.summary?.substring(0, 100) || ''}...</p>
           </div>
@@ -480,7 +493,7 @@ async function showFullAnalysisOnHomepage(item) {
   let fullItem = item;
   try {
     // Fetch full content based on item type
-    if (item.type && item.type.toLowerCase() === 'war analysis') {
+    if (item.type === 'war') {
       // Fetch full wars article
       const res = await fetch(
         `https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(item.id)}`
@@ -488,7 +501,7 @@ async function showFullAnalysisOnHomepage(item) {
       if (res.ok) {
         fullItem = await res.json();
       }
-    } else if (item.id) {
+    } else if (item.type === 'explainer' && item.id) {
       // Fetch full explainer
       const res = await fetch(
         `https://the-terrific-proxy.onrender.com/api/explainers/${encodeURIComponent(item.id)}`
@@ -533,7 +546,7 @@ async function showFullAnalysisOnHomepage(item) {
 
 // Helper function to get article content based on type
 function getArticleContent(fullItem, originalItem) {
-  if (fullItem.type && fullItem.type.toLowerCase() === 'war analysis') {
+  if (fullItem.type === 'war') {
     // Wars content
     return fullItem.body || fullItem.bodyText || fullItem.summary || 'No content available';
   } else {

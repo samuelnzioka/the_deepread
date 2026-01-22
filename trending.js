@@ -29,12 +29,12 @@ async function loadTrendingContent() {
     
     // Use exactly 8 explainers for trending (4 per slide, 2 slides total)
     trendingData = explainersData.slice(0, 8).map(explainer => ({
+      id: explainer.id, // ✅ ADD THIS - CRITICAL FIX
       type: 'explainer',
       title: explainer.title || 'No title',
       image: explainer.image && explainer.image !== '/assets/placeholder.jpg' 
         ? explainer.image 
         : `https://source.unsplash.com/200x120/?${encodeURIComponent(explainer.title || 'explainer')}`,
-      url: `explainer.html?id=${explainer.id || 'unknown'}&title=${encodeURIComponent(explainer.title || '')}&image=${encodeURIComponent(explainer.image || '')}&summary=${encodeURIComponent(explainer.summary || '')}&body=${encodeURIComponent(explainer.body || '')}&source=${encodeURIComponent(explainer.source || '')}&published=${encodeURIComponent(explainer.published || '')}&url=${encodeURIComponent(explainer.url || '')}`,
       source: explainer.source || 'Unknown'
     }));
     
@@ -263,7 +263,7 @@ async function showFullAnalysisOnHomepage(item) {
   let fullItem = item;
   try {
     // Fetch full content based on item type
-    if (item.type && item.type.toLowerCase() === 'war analysis') {
+    if (item.type === 'war') {
       // Fetch full wars article
       const res = await fetch(
         `https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(item.id)}`
@@ -271,7 +271,7 @@ async function showFullAnalysisOnHomepage(item) {
       if (res.ok) {
         fullItem = await res.json();
       }
-    } else if (item.id) {
+    } else if (item.type === 'explainer' && item.id) {
       // Fetch full explainer
       const res = await fetch(
         `https://the-terrific-proxy.onrender.com/api/explainers/${encodeURIComponent(item.id)}`
@@ -316,7 +316,7 @@ async function showFullAnalysisOnHomepage(item) {
 
 // Helper function to get article content based on type
 function getArticleContent(fullItem, originalItem) {
-  if (fullItem.type && fullItem.type.toLowerCase() === 'war analysis') {
+  if (fullItem.type === 'war') {
     // Wars content
     return fullItem.body || fullItem.bodyText || fullItem.summary || 'No content available';
   } else {
