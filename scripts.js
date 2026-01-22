@@ -166,41 +166,15 @@ async function loadWarsAnalysis() {
   }
 }
 
-function showAnalysisSlide(index) {
-  const slides = document.querySelectorAll('#analysisDialog .slide');
-  const dots = document.querySelectorAll('#analysisDialog .analysis-dots .dot');
-  
-  if (slides.length === 0) return;
-  
-  // Hide current slide
-  slides[currentAnalysisSlide].classList.remove('active');
-  dots[currentAnalysisSlide].classList.remove('active');
-  
-  // Show new slide
-  currentAnalysisSlide = index;
-  slides[currentAnalysisSlide].classList.add('active');
-  dots[currentAnalysisSlide].classList.add('active');
-}
-
-function changeAnalysisSlide(direction) {
-  const slides = document.querySelectorAll('#analysisDialog .slide');
-  if (slides.length === 0) return;
-  
-  let newIndex = currentAnalysisSlide + direction;
-  if (newIndex < 0) newIndex = slides.length - 1;
-  if (newIndex >= slides.length) newIndex = 0;
-  
-  showAnalysisSlide(newIndex);
-}
 
 // Load wars analysis when page loads
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM loaded, attempting to load wars analysis...');
+  console.log('DOM loaded, loading wars analysis...');
   loadWarsAnalysis();
-  
-  // Initialize search functionality
-  initializeSearch();
 });
+
+// Initialize search functionality
+initializeSearch();
 
 // ===============================
 // SEARCH FUNCTIONALITY
