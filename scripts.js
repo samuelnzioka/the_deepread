@@ -131,7 +131,10 @@ async function loadWarsAnalysis() {
         
         const articleCard = document.createElement('div');
         articleCard.className = 'trend-item';
-        articleCard.onclick = () => showFullAnalysisOnHomepage(article);
+        articleCard.onclick = () => {
+        // Send to full analysis in wars tab (like advertisement)
+        window.open(`war.html?id=${article.id}`, '_blank');
+      };
         
         articleCard.innerHTML = `
           <div class="trend-item-image">
