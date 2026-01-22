@@ -18,11 +18,22 @@ function renderExplainer() {
     return;
   }
 
-  if (!title) {
+  if (!title && !id) {
     explainerContainer.innerHTML = `
       <div class="error-message">
         <h2>No explainer data found</h2>
         <p>Please go back and select an explainer from the list.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Show loading state if we only have an ID (data will be fetched)
+  if (id && !title) {
+    explainerContainer.innerHTML = `
+      <div class="loading-message">
+        <h2>Loading explainer...</h2>
+        <p>Please wait while we fetch the full analysis.</p>
       </div>
     `;
     return;
