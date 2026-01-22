@@ -106,8 +106,8 @@ function renderSlides(slides) {
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
         console.log('Clicked trending item:', item);
-        // Send to full analysis in explainers tab (like advertisement)
-        window.open(`explainers.html?id=${item.id}`, '_blank');
+        // Send to full analysis in explainers tab (same tab, no new tab)
+        window.location.href = `explainer.html?id=${encodeURIComponent(item.id)}`;
       };
       
       trendItem.innerHTML = `

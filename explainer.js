@@ -46,7 +46,7 @@ function renderExplainer() {
       
       <div class="explainer-body">
         <h2>Full Analysis</h2>
-        <p>${body || 'No full analysis available'}</p>
+        ${body || 'No full analysis available'}
       </div>
     </div>
   `;
@@ -54,7 +54,45 @@ function renderExplainer() {
 
 // Render when page loads
 document.addEventListener('DOMContentLoaded', () => {
-  renderExplainer();
+  (async () => {
+    try {
+      // If we only have an id (e.g. coming from homepage cards), fetch the full explainer first.
+      if (id && !title) {
+        const res = await fetch(
+          `https://the-terrific-proxy.onrender.com/api/explainers/${encodeURIComponent(id)}`
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          title = data?.title || title;
+          image = data?.image || image;
+          summary = data?.summary || summary;
+          source = data?.source || source;
+          published = data?.published || published;
+          url = data?.url || url;
+
+          if (data?.background || data?.happening || data?.globalImpact || data?.whyItMatters || data?.outlook) {
+            body = `
+              ${data?.background ? `<h2>Background</h2><p>${data.background}</p>` : ''}
+              ${data?.happening ? `<h2>What's Happening</h2><p>${data.happening}</p>` : ''}
+              ${data?.globalImpact ? `<h2>Global Impact</h2><p>${data.globalImpact}</p>` : ''}
+              ${data?.whyItMatters ? `<h2>Why It Matters</h2><p>${data.whyItMatters}</p>` : ''}
+              ${data?.outlook ? `<h2>What Comes Next</h2><p>${data.outlook}</p>` : ''}
+            `;
+          } else {
+            body = data?.body || data?.bodyText || data?.content || body;
+            if (body && !String(body).trim().startsWith('<')) {
+              body = `<p>${body}</p>`;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load explainer by id:', err);
+    }
+
+    renderExplainer();
+  })();
   
   // Add go back functionality
   const goBackBtn = document.getElementById('goBackBtn');
