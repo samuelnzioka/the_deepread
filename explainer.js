@@ -28,7 +28,7 @@ function renderExplainer() {
     return;
   }
 
-  // Show loading state if we only have an ID (data will be fetched)
+  // Show loading state if we only have an ID and haven't fetched data yet
   if (id && !title) {
     explainerContainer.innerHTML = `
       <div class="loading-message">
@@ -36,31 +36,31 @@ function renderExplainer() {
         <p>Please wait while we fetch the full analysis.</p>
       </div>
     `;
-    return;
+  } else {
+    // Render the explainer content
+    explainerContainer.innerHTML = `
+      <div class="explainer-content">
+        ${image ? `<img src="${image}" alt="${title}" class="explainer-image">` : ''}
+        <h1 class="explainer-title">${title}</h1>
+        
+        <div class="explainer-meta">
+          <span class="source">${source}</span>
+          <span class="published">${published ? new Date(published).toLocaleDateString() : 'Unknown date'}</span>
+          ${url ? `<a href="${url}" target="_blank" class="original-link">View Original →</a>` : ''}
+        </div>
+        
+        <div class="explainer-summary">
+          <h2>Summary</h2>
+          <p>${summary || 'No summary available'}</p>
+        </div>
+        
+        <div class="explainer-body">
+          <h2>Full Analysis</h2>
+          ${body || 'No full analysis available'}
+        </div>
+      </div>
+    `;
   }
-
-  explainerContainer.innerHTML = `
-    <div class="explainer-content">
-      ${image ? `<img src="${image}" alt="${title}" class="explainer-image">` : ''}
-      <h1 class="explainer-title">${title}</h1>
-      
-      <div class="explainer-meta">
-        <span class="source">${source}</span>
-        <span class="published">${published ? new Date(published).toLocaleDateString() : 'Unknown date'}</span>
-        ${url ? `<a href="${url}" target="_blank" class="original-link">View Original →</a>` : ''}
-      </div>
-      
-      <div class="explainer-summary">
-        <h2>Summary</h2>
-        <p>${summary || 'No summary available'}</p>
-      </div>
-      
-      <div class="explainer-body">
-        <h2>Full Analysis</h2>
-        ${body || 'No full analysis available'}
-      </div>
-    </div>
-  `;
 }
 
 // Render when page loads
