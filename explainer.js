@@ -96,13 +96,39 @@ document.addEventListener('DOMContentLoaded', () => {
               body = `<p>${body}</p>`;
             }
           }
+          
+          // NOW render the explainer with the fetched data
+          renderExplainer();
+        } else {
+          console.error('Failed to fetch explainer:', res.status);
+          // Show error if fetch failed
+          const explainerContainer = document.getElementById("explainer");
+          if (explainerContainer) {
+            explainerContainer.innerHTML = `
+              <div class="error-message">
+                <h2>Failed to load explainer</h2>
+                <p>Please try again later.</p>
+              </div>
+            `;
+          }
         }
+      } else {
+        // If we already have all data, render immediately
+        renderExplainer();
       }
     } catch (err) {
       console.error('Failed to load explainer by id:', err);
+      // Show error if something went wrong
+      const explainerContainer = document.getElementById("explainer");
+      if (explainerContainer) {
+        explainerContainer.innerHTML = `
+          <div class="error-message">
+            <h2>Error loading explainer</h2>
+            <p>Please try again later.</p>
+          </div>
+        `;
+      }
     }
-
-    renderExplainer();
   })();
   
   // Add go back functionality
