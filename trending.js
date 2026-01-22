@@ -1,4 +1,4 @@
-// Trending Slideshow - Gets explainers from explainers page
+// Trending Now Box - Gets content from explainers tab
 let currentSlide = 0;
 let trendingData = [];
 let autoScrollInterval;
@@ -8,7 +8,7 @@ async function loadTrendingContent() {
   try {
     console.log('Loading trending content from explainers API...');
     
-    // Always fetch fresh data from same API as explainers
+    // Fetch from explainers API
     const explainersResponse = await fetch('https://the-terrific-proxy.onrender.com/api/explainers?page=1');
     
     if (!explainersResponse.ok) {
@@ -27,9 +27,9 @@ async function loadTrendingContent() {
       return;
     }
     
-    // Use exactly 8 explainers for trending (4 per slide, 2 slides total)
-    trendingData = explainersData.slice(0, 8).map(explainer => ({
-      id: explainer.id, // ✅ ADD THIS - CRITICAL FIX
+    // Use exactly 6 explainers for trending (2 per slide, 3 slides total)
+    trendingData = explainersData.slice(0, 6).map(explainer => ({
+      id: explainer.id, // ✅ CRITICAL: Include ID for full analysis
       type: 'explainer',
       title: explainer.title || 'No title',
       image: explainer.image && explainer.image !== '/assets/placeholder.jpg' 
@@ -46,11 +46,11 @@ async function loadTrendingContent() {
     trendingData = [];
   }
   
-  // Create slides (4 items per slide, 2 slides total)
+  // Create slides (2 items per slide, 3 slides total)
   const slides = [];
   if (trendingData.length > 0) {
-    for (let i = 0; i < trendingData.length; i += 4) {
-      slides.push(trendingData.slice(i, i + 4));
+    for (let i = 0; i < trendingData.length; i += 2) {
+      slides.push(trendingData.slice(i, i + 2));
     }
   }
   
@@ -106,7 +106,7 @@ function renderSlides(slides) {
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
         console.log('Clicked trending item:', item);
-        // Show full analysis on homepage for ALL items (same as explainers)
+        // Open full analysis on homepage (same as explainers tab)
         showFullAnalysisOnHomepage(item);
       };
       
@@ -195,63 +195,8 @@ function startAutoScroll() {
 }
 
 // Refresh trending data every 2 hours
-let explainerHomeScrollY = 0;
 
-async function showExplainerOnHomepage(explainer) {
-  explainerHomeScrollY = window.scrollY || 0;
-
-  // Hide all dialogs
-  document.querySelectorAll('.dialog').forEach(dialog => {
-    dialog.style.display = 'none';
-  });
-
-  let fullExplainer = explainer;
-  try {
-    if (explainer && explainer.id) {
-      const res = await fetch(`https://the-terrific-proxy.onrender.com/api/explainers/${encodeURIComponent(explainer.id)}`);
-      if (res.ok) {
-        fullExplainer = await res.json();
-      }
-    }
-  } catch (e) {
-    fullExplainer = explainer;
-  }
-  
-  // Create explainer view overlay
-  const explainerView = document.createElement('div');
-  explainerView.className = 'explainer-view-overlay';
-  explainerView.innerHTML = `
-    <div class="explainer-view-content">
-      <button class="bubble-btn" onclick="closeExplainerView()">
-        <i class="fas fa-arrow-left"></i> Return to Home
-      </button>
-      <div class="explainer-article">
-        ${fullExplainer.image ? `<img src="${fullExplainer.image}" class="explainer-article-image" alt="${fullExplainer.title}">` : ''}
-        <h1 class="explainer-article-title">${fullExplainer.title}</h1>
-        <div class="explainer-article-meta">
-          <span class="source">Source: ${fullExplainer.source || explainer.source || 'Unknown'}</span>
-        </div>
-        <div class="explainer-article-body">
-          ${(fullExplainer.background || fullExplainer.happening || fullExplainer.globalImpact || fullExplainer.whyItMatters || fullExplainer.outlook) ? `
-            ${fullExplainer.background ? `<h2>Background</h2><p>${fullExplainer.background}</p>` : ''}
-            ${fullExplainer.happening ? `<h2>What's Happening</h2><p>${fullExplainer.happening}</p>` : ''}
-            ${fullExplainer.globalImpact ? `<h2>Global Impact</h2><p>${fullExplainer.globalImpact}</p>` : ''}
-            ${fullExplainer.whyItMatters ? `<h2>Why It Matters</h2><p>${fullExplainer.whyItMatters}</p>` : ''}
-            ${fullExplainer.outlook ? `<h2>What Comes Next</h2><p>${fullExplainer.outlook}</p>` : ''}
-          ` : `<p>${fullExplainer.summary || explainer.summary || 'No summary available'}</p>`}
-        </div>
-        <a href="${explainer.url}" class="original-link" target="_blank">
-          View Original Article →
-        </a>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(explainerView);
-  document.body.style.overflow = 'hidden';
-}
-
-// Unified function to show full analysis on homepage for ALL items (same as explainers)
+// Unified function to show full analysis on homepage (same as explainers tab)
 async function showFullAnalysisOnHomepage(item) {
   const homeScrollY = window.scrollY || 0;
 
@@ -262,17 +207,8 @@ async function showFullAnalysisOnHomepage(item) {
 
   let fullItem = item;
   try {
-    // Fetch full content based on item type
-    if (item.type === 'war') {
-      // Fetch full wars article
-      const res = await fetch(
-        `https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(item.id)}`
-      );
-      if (res.ok) {
-        fullItem = await res.json();
-      }
-    } else if (item.type === 'explainer' && item.id) {
-      // Fetch full explainer
+    // Fetch full content for explainer
+    if (item.type === 'explainer' && item.id) {
       const res = await fetch(
         `https://the-terrific-proxy.onrender.com/api/explainers/${encodeURIComponent(item.id)}`
       );
@@ -285,7 +221,7 @@ async function showFullAnalysisOnHomepage(item) {
     fullItem = item;
   }
   
-  // Create explainer view overlay (same for ALL items)
+  // Create explainer view overlay (same as explainers tab)
   const itemView = document.createElement('div');
   itemView.className = 'explainer-view-overlay';
   itemView.innerHTML = `
@@ -314,21 +250,16 @@ async function showFullAnalysisOnHomepage(item) {
   window.fullAnalysisHomeScrollY = homeScrollY;
 }
 
-// Helper function to get article content based on type
+// Helper function to get article content (same as explainers tab)
 function getArticleContent(fullItem, originalItem) {
-  if (fullItem.type === 'war') {
-    // Wars content
-    return fullItem.body || fullItem.bodyText || fullItem.summary || 'No content available';
-  } else {
-    // Explainer content (structured sections)
-    return (fullItem.background || fullItem.happening || fullItem.globalImpact || fullItem.whyItMatters || fullItem.outlook) ? `
-      ${fullItem.background ? `<h2>Background</h2><p>${fullItem.background}</p>` : ''}
-      ${fullItem.happening ? `<h2>What's Happening</h2><p>${fullItem.happening}</p>` : ''}
-      ${fullItem.globalImpact ? `<h2>Global Impact</h2><p>${fullItem.globalImpact}</p>` : ''}
-      ${fullItem.whyItMatters ? `<h2>Why It Matters</h2><p>${fullItem.whyItMatters}</p>` : ''}
-      ${fullItem.outlook ? `<h2>What Comes Next</h2><p>${fullItem.outlook}</p>` : ''}
-    ` : `<p>${fullItem.summary || originalItem.summary || 'No summary available'}</p>`;
-  }
+  // Explainer content (structured sections)
+  return (fullItem.background || fullItem.happening || fullItem.globalImpact || fullItem.whyItMatters || fullItem.outlook) ? `
+    ${fullItem.background ? `<h2>Background</h2><p>${fullItem.background}</p>` : ''}
+    ${fullItem.happening ? `<h2>What's Happening</h2><p>${fullItem.happening}</p>` : ''}
+    ${fullItem.globalImpact ? `<h2>Global Impact</h2><p>${fullItem.globalImpact}</p>` : ''}
+    ${fullItem.whyItMatters ? `<h2>Why It Matters</h2><p>${fullItem.whyItMatters}</p>` : ''}
+    ${fullItem.outlook ? `<h2>What Comes Next</h2><p>${fullItem.outlook}</p>` : ''}
+  ` : `<p>${fullItem.summary || originalItem.summary || 'No summary available'}</p>`;
 }
 
 function closeFullAnalysisView() {
@@ -344,21 +275,6 @@ function closeFullAnalysisView() {
   });
 
   window.scrollTo(0, window.fullAnalysisHomeScrollY || 0);
-}
-
-function closeExplainerView() {
-  const explainerView = document.querySelector('.explainer-view-overlay');
-  if (explainerView) {
-    explainerView.remove();
-    document.body.style.overflow = '';
-  }
-  
-  // Show all dialogs again
-  document.querySelectorAll('.dialog').forEach(dialog => {
-    dialog.style.display = 'block';
-  });
-
-  window.scrollTo(0, explainerHomeScrollY || 0);
 }
 
 function startRefreshInterval() {
