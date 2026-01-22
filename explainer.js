@@ -77,7 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (res.ok) {
           const data = await res.json();
           const explainers = data.explainers || data.results || [];
+          console.log('Searching for explainer with ID:', id);
+          console.log('Available explainers:', explainers.map(e => ({ id: e.id, title: e.title })));
           const explainer = explainers.find(e => e.id === id);
+          console.log('Found explainer:', explainer);
           
           if (explainer) {
             title = explainer?.title || title;
