@@ -32,12 +32,13 @@ async function loadWarsContent() {
     
     // Use exactly 4 wars for slideshow (2 per slide, 2 slides total)
     warsData = warsApiData.slice(0, 4).map(war => ({
+      id: war.id,
       type: 'war',
       title: war.title || 'No title',
       image: war.image && war.image !== '/assets/placeholder.jpg' 
         ? war.image 
         : `https://source.unsplash.com/200x120/?${encodeURIComponent(war.title || 'war')}`,
-      url: `war.html?id=${war.id || 'unknown'}&title=${encodeURIComponent(war.title || '')}&image=${encodeURIComponent(war.image || '')}&summary=${encodeURIComponent(war.summary || '')}&body=${encodeURIComponent(war.body || '')}&source=${encodeURIComponent(war.source || '')}&published=${encodeURIComponent(war.published || '')}&url=${encodeURIComponent(war.url || '')}`,
+      summary: war.summary || '',
       source: war.source || 'Unknown'
     }));
     
@@ -114,11 +115,8 @@ function renderWarsSlides(slides) {
       const trendItem = document.createElement('div');
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
-        console.log('Clicked wars item:', item);
-        // Store war data for homepage display
-        localStorage.setItem('currentWar', JSON.stringify(item));
-        // Show war on homepage
-        showWarOnHomepage(item);
+        // Simple redirect to wars page (advertisement behavior)
+        window.location.href = `wars.html?id=${encodeURIComponent(item.id)}`;
       };
       
       trendItem.innerHTML = `
@@ -127,9 +125,10 @@ function renderWarsSlides(slides) {
                onerror="this.src='https://source.unsplash.com/200x120/?${encodeURIComponent(item.title || 'war')}'">
         </div>
         <div class="trend-item-content">
-          <span class="type-badge">${item.type.toUpperCase()}</span>
+          <span class="type-badge">WARS & POWER</span>
           <h4>${item.title}</h4>
-          <p>${item.source}</p>
+          <p>${item.summary?.substring(0, 100) || ''}...</p>
+          <div class="read-more">Read full analysis →</div>
         </div>
       `;
       
@@ -157,130 +156,43 @@ function renderWarsSlides(slides) {
   console.log('Wars slides rendered successfully');
 }
 
-function showWarOnHomepage(war) {
-  // Preserve scroll position so we can return to the same spot
-  window.warHomeScrollY = window.scrollY || 0;
+// Initialize wars content when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded - loading wars content...');
+  loadWarsContent();
+});
 
-  // Hide all dialogs
-  document.querySelectorAll('.dialog').forEach(dialog => {
-    dialog.style.display = 'none';
-  });
+// Slide navigation functions
+function goToWarsSlide(index) {
+  const slides = document.querySelectorAll('#warsDialog .slide');
+  const dots = document.querySelectorAll('#warsDialog .dot');
   
-  // Create war view overlay
-  const warView = document.createElement('div');
-  warView.className = 'war-view-overlay';
-  warView.innerHTML = `
-    <div class="war-view-content">
-      <button class="return-home-btn bubble-btn" onclick="closeWarView()">
-        <i class="fas fa-arrow-left"></i> Return to Home
-      </button>
-      <div class="war-article">
-        ${war.image ? `<img src="${war.image}" class="war-article-image" alt="${war.title}">` : ''}
-        <h1 class="war-article-title">${war.title}</h1>
-        <div class="war-article-meta">
-          <span class="source">Source: ${war.source}</span>
-        </div>
-        <div class="war-article-body">
-          <p>${war.summary || 'No summary available'}</p>
-        </div>
-        <a href="${war.url}" class="original-link" target="_blank">
-          View Original Article →
-        </a>
-      </div>
-    </div>
-  `;
+  if (slides.length === 0 || dots.length === 0) return;
   
-  document.body.appendChild(warView);
-  document.body.style.overflow = 'hidden';
-}
-
-function closeWarView() {
-  const warView = document.querySelector('.war-view-overlay');
-  if (warView) {
-    warView.remove();
-    document.body.style.overflow = '';
-  }
+  // Remove active class from all slides and dots
+  slides.forEach(slide => slide.classList.remove('active'));
+  dots.forEach(dot => dot.classList.remove('active'));
   
-  // Show all dialogs again
-  document.querySelectorAll('.dialog').forEach(dialog => {
-    dialog.style.display = 'block';
-  });
-
-  window.scrollTo(0, window.warHomeScrollY || 0);
+  // Add active class to selected slide and dot
+  slides[index].classList.add('active');
+  dots[index].classList.add('active');
+  
+  currentWarsSlide = index;
 }
 
 function changeWarsSlide(direction) {
   const slides = document.querySelectorAll('#warsDialog .slide');
-  const dots = document.querySelectorAll('#warsDialog .wars-dots .dot');
+  const dots = document.querySelectorAll('#warsDialog .dot');
   
   if (slides.length === 0) return;
   
-  // Hide current slide
-  slides[currentWarsSlide].classList.remove('active');
-  dots[currentWarsSlide].classList.remove('active');
+  currentWarsSlide += direction;
   
-  // Calculate new slide index
-  currentWarsSlide = (currentWarsSlide + direction + slides.length) % slides.length;
-  
-  // Show new slide
-  slides[currentWarsSlide].classList.add('active');
-  dots[currentWarsSlide].classList.add('active');
-  
-  console.log(`Changed to wars slide ${currentWarsSlide + 1}`);
-}
-
-function goToWarsSlide(index) {
-  const slides = document.querySelectorAll('#warsDialog .slide');
-  const dots = document.querySelectorAll('#warsDialog .wars-dots .dot');
-  
-  if (slides.length === 0) return;
-  
-  // Hide current slide
-  slides[currentWarsSlide].classList.remove('active');
-  dots[currentWarsSlide].classList.remove('active');
-  
-  // Show selected slide
-  currentWarsSlide = index;
-  slides[currentWarsSlide].classList.add('active');
-  dots[currentWarsSlide].classList.add('active');
-  
-  console.log(`Went to wars slide ${index + 1}`);
-}
-
-function startWarsAutoScroll() {
-  // Clear any existing interval
-  if (warsAutoScrollInterval) {
-    clearInterval(warsAutoScrollInterval);
+  if (currentWarsSlide >= slides.length) {
+    currentWarsSlide = 0;
+  } else if (currentWarsSlide < 0) {
+    currentWarsSlide = slides.length - 1;
   }
   
-  warsAutoScrollInterval = setInterval(() => {
-    changeWarsSlide(1);
-  }, 8000);
-}
-
-function startWarsRefreshInterval() {
-  // Clear any existing interval
-  if (warsRefreshInterval) {
-    clearInterval(warsRefreshInterval);
-  }
-  
-  warsRefreshInterval = setInterval(() => {
-    console.log('Refreshing wars data (2-hour interval)');
-    loadWarsContent();
-  }, 2 * 60 * 60 * 1000); // 2 hours in milliseconds
-}
-
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    loadWarsContent().then(() => {
-      startWarsAutoScroll();
-      startWarsRefreshInterval();
-    });
-  });
-} else {
-  loadWarsContent().then(() => {
-    startWarsAutoScroll();
-    startWarsRefreshInterval();
-  });
+  goToWarsSlide(currentWarsSlide);
 }
