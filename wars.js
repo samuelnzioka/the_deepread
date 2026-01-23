@@ -2,7 +2,7 @@ console.log("🔍 Wars page loaded");
 
 // Wait for DOM to be ready before accessing elements
 document.addEventListener('DOMContentLoaded', function() {
-  // 🛠️ STEP 2: SLUG DETECTION AT THE TOP
+  // 🛠️ SLUG DETECTION FROM QUERY PARAMETERS
   const params = new URLSearchParams(window.location.search);
   const slug = params.get("slug");
   
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('🔍 Search params:', window.location.search);
   console.log('🔍 Detected slug:', slug);
   
-  // 🛠️ STEP 3: SPLIT LOGIC: LIST vs ARTICLE (CRITICAL)
+  // 🛠️ SPLIT LOGIC: LIST vs ARTICLE (CRITICAL)
   if (!slug) {
     console.log("📋 No slug detected - loading wars list");
     loadWarsList();
@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="explainer-content">
           <h3>${article.title}</h3>
           <p>${article.summary}</p>
-          <a class="bubble-btn" href="wars.html?slug=${articleSlug}">
-            Read Full Analysis
+          <a href="wars.html?slug=${articleSlug}" class="bubble-btn read-full">
+            Read full analysis →
           </a>
         </div>
       `;
