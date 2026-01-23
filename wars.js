@@ -3,11 +3,12 @@ console.log("🔍 Wars page loaded");
 // Wait for DOM to be ready before accessing elements
 document.addEventListener('DOMContentLoaded', function() {
   // 🛠️ STEP 2: SLUG DETECTION AT THE TOP
-  const pathParts = window.location.pathname.split("/").filter(Boolean);
-  const slug = pathParts.length > 1 ? pathParts[pathParts.length - 1] : null;
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get("slug");
   
-  console.log("🔍 Path parts:", pathParts);
-  console.log("🔍 Detected slug:", slug);
+  console.log('🔍 Full pathname:', window.location.pathname);
+  console.log('🔍 Search params:', window.location.search);
+  console.log('🔍 Detected slug:', slug);
   
   // 🛠️ STEP 3: SPLIT LOGIC: LIST vs ARTICLE (CRITICAL)
   if (!slug) {
@@ -65,12 +66,17 @@ document.addEventListener('DOMContentLoaded', function() {
       // Create slug from title if not available
       const articleSlug = article.slug || createSlugFromTitle(article.title);
       
+      console.log('📄 Article:', article.title);
+      console.log('📄 Original slug:', article.slug);
+      console.log('📄 Generated slug:', articleSlug);
+      console.log('📄 Full URL:', `/wars/${articleSlug}`);
+      
       articleCard.innerHTML = `
         ${article.image ? `<img src="${article.image}" alt="${article.title}" />` : ''}
         <div class="explainer-content">
           <h3>${article.title}</h3>
           <p>${article.summary}</p>
-          <a class="bubble-btn" href="/wars/${articleSlug}">
+          <a class="bubble-btn" href="wars.html?slug=${articleSlug}">
             Read Full Analysis
           </a>
         </div>
@@ -127,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (container) {
           container.innerHTML = `
             <p>War article not found.</p>
-            <a href="/wars">← Back to Wars</a>
+            <a href="wars.html">← Back to Wars</a>
           `;
         }
       });
@@ -166,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     goBackBtn.className = 'go-back-btn';
     goBackBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Wars';
     goBackBtn.onclick = () => {
-      window.location.href = '/wars';
+      window.location.href = 'wars.html';
     };
     container.insertBefore(goBackBtn, container.firstChild);
   }
