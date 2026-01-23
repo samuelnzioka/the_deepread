@@ -1,9 +1,9 @@
-# THE DEEPREAD - Clean URL Routing for Cloudflare Pages
+# THE DEEPREAD - Clean URL Redirects for Cloudflare Pages
 
-# Article routing - all article URLs go to article.html
-/explainers/*    /article.html   200
-/wars/*         /article.html   200
-/sports/*       /article.html   200
+# Redirect clean URLs to existing pages with query parameters
+/explainers/*    /explainer.html   200
+/wars/*         /wars.html        200
+/sports/*       /sports.html      200
 
 # Fallback for any other routes
 /*              /index.html     404

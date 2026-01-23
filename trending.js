@@ -118,9 +118,8 @@ function renderSlides(slides) {
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
         console.log('Clicked trending item:', item);
-        // Clean URL routing to article page
-        const slug = item.slug || createSlugFromTitle(item.title);
-        window.location.href = `/explainers/${slug}`;
+        // Clean URL - only pass ID, let destination page fetch data
+        window.location.href = `explainer.html?id=${encodeURIComponent(item.id)}`;
       };
       
       trendItem.innerHTML = `

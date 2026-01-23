@@ -113,9 +113,8 @@ function renderSportsSlides(slides) {
       sportItem.className = 'trend-item';
       sportItem.onclick = () => {
         console.log('🏅 Clicked sports item:', item.title);
-        // Clean URL routing to article page
-        const slug = item.slug || createSlugFromTitle(item.title);
-        window.location.href = `/sports/${slug}`;
+        // Use existing system
+        window.location.href = `sports.html?id=${encodeURIComponent(item.id)}`;
       };
       
       sportItem.innerHTML = `

@@ -127,9 +127,8 @@ function renderWarsSlides(slides) {
       const trendItem = document.createElement('div');
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
-        // Clean URL routing to article page
-        const slug = item.slug || createSlugFromTitle(item.title);
-        window.location.href = `/wars/${slug}`;
+        // Use existing system
+        window.location.href = `wars.html?id=${encodeURIComponent(item.id)}`;
       };
       
       trendItem.innerHTML = `
