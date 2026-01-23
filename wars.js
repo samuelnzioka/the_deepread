@@ -1,95 +1,90 @@
+const container = document.getElementById("wars-feed");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
+
+console.log("🔍 Wars page loaded");
+console.log("🎯 Container element:", container);
+console.log("🎯 Load More button:", loadMoreBtn);
+
+if (!container) {
+  console.error("❌ #wars-feed container not found");
+} else {
+  console.log("✅ Container found, current content:", container.innerHTML);
+}
+
+if (!loadMoreBtn) {
+  console.error("❌ #loadMoreBtn button not found");
+} else {
+  console.log("✅ Load More button found");
+}
+
 // Handle URL parameters for individual war articles
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
-let title = decodeURIComponent(params.get("title") || "");
-let image = params.get("image");
-let summary = decodeURIComponent(params.get("summary") || "");
-let body = decodeURIComponent(params.get("body") || "");
-let source = decodeURIComponent(params.get("source") || "");
-let published = params.get("published");
-let url = decodeURIComponent(params.get("url") || "");
 
-console.log("Wars page loaded with params:", { id, title, image, summary, body, source, published, url });
+console.log("Wars page loaded with ID:", id);
 
 // Function to render individual war article
 function renderWarArticle() {
-  const container = document.getElementById("wars-feed");
+  console.log("Rendering individual war article for ID:", id);
   
-  if (!container) {
-    console.error("Wars container not found");
-    return;
-  }
-
-  if (!title && !id) {
-    // No individual article requested, load list view
-    loadWarsList();
-    return;
-  }
-
   // Hide load more button for individual article view
-  const loadMoreBtn = document.getElementById("loadMoreBtn");
   if (loadMoreBtn) {
     loadMoreBtn.style.display = 'none';
   }
 
-  // Render individual war article
-  container.innerHTML = `
-    <div class="explainer-content">
-      ${image ? `<img src="${image}" alt="${title}" class="explainer-image">` : ''}
-      <h1 class="explainer-title">${title}</h1>
+  // Fetch full article data
+  fetch(`https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(id)}`)
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(article => {
+      console.log("Full war article data:", article);
       
-      <div class="explainer-meta">
-        <span class="source">${source}</span>
-        <span class="published">${published ? new Date(published).toLocaleDateString() : 'Unknown date'}</span>
-        ${url ? `<a href="${url}" target="_blank" class="original-link">View Original →</a>` : ''}
-      </div>
+      container.innerHTML = `
+        <div class="explainer-content">
+          ${article.image ? `<img src="${article.image}" alt="${article.title}" class="explainer-image">` : ''}
+          <h1 class="explainer-title">${article.title}</h1>
+          
+          <div class="explainer-meta">
+            <span class="source">${article.source || 'Unknown'}</span>
+            <span class="published">${article.date ? new Date(article.date).toLocaleDateString() : 'Unknown date'}</span>
+            ${article.url ? `<a href="${article.url}" target="_blank" class="original-link">View Original →</a>` : ''}
+          </div>
+          
+          <div class="explainer-summary">
+            <h2>Summary</h2>
+            <p>${article.summary || 'No summary available'}</p>
+          </div>
+          
+          <div class="explainer-body">
+            <h2>Full Analysis</h2>
+            ${article.body || article.background || 'No full analysis available'}
+          </div>
+        </div>
+      `;
       
-      <div class="explainer-summary">
-        <h2>Summary</h2>
-        <p>${summary || 'No summary available'}</p>
-      </div>
+      // Add go back functionality
+      const goBackBtn = document.createElement('button');
+      goBackBtn.className = 'go-back-btn';
+      goBackBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Go Back to Wars & Power';
+      goBackBtn.onclick = () => {
+        window.location.href = 'wars.html';
+      };
+      container.insertBefore(goBackBtn, container.firstChild);
       
-      <div class="explainer-body">
-        <h2>Full Analysis</h2>
-        ${body || 'No full analysis available'}
-      </div>
-    </div>
-  `;
-  
-  // Add go back functionality
-  const goBackBtn = document.getElementById("goBackBtn");
-  if (goBackBtn) {
-    goBackBtn.style.display = 'block';
-    goBackBtn.addEventListener('click', () => {
-      window.location.href = 'wars.html';
+    })
+    .catch(err => {
+      console.error('Error fetching war article:', err);
+      container.innerHTML = '<p>Error loading war article. Please try again.</p>';
     });
-  }
 }
 
-// Function to load wars list
-function loadWarsList() {
-  const container = document.getElementById("wars-feed");
-  const loadMoreBtn = document.getElementById("loadMoreBtn");
-
-  console.log("🔍 Wars page loaded");
-  console.log("🎯 Container element:", container);
-  console.log("🎯 Load More button:", loadMoreBtn);
-
-  if (!container) {
-    console.error("❌ #wars-feed container not found");
-  } else {
-    console.log("✅ Container found, current content:", container.innerHTML);
-  }
-
-  if (!loadMoreBtn) {
-    console.error("❌ #loadMoreBtn button not found");
-  } else {
-    console.log("✅ Load More button found");
-  }
-
-  let page = 1;
-  let loading = false;
-  let hasMore = true;
+let page = 1;
+let loading = false;
+let hasMore = true;
 
 async function loadWars() {
   if (loading || !hasMore) return;
@@ -100,14 +95,21 @@ async function loadWars() {
 
   try {
     const res = await fetch(`https://the-terrific-proxy.onrender.com/api/wars?page=${page}`);
-    console.log(`📡 Response status: ${res.status}`);
-    
-    const data = await res.json();
-    console.log('📊 Wars API Response:', data);
+    console.log("📡 Response status:", res.status);
 
-    if (!data || !data.articles) {
-      console.log('❌ No articles found in response');
-      container.innerHTML = '<p>No wars articles found.</p>';
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    console.log("📄 Wars data received:", data);
+
+    if (!data || !data.articles || data.articles.length === 0) {
+      console.log("📭 No more wars articles available");
+      hasMore = false;
+      if (page === 1) {
+        container.innerHTML = '<p>No wars articles found.</p>';
+      }
       return;
     }
 
@@ -128,7 +130,7 @@ async function loadWars() {
         <div class="explainer-content">
           <h3>${article.title}</h3>
           <p>${article.summary}</p>
-          <a class="bubble-btn" href="war.html?id=${encodeURIComponent(article.id)}">
+          <a class="bubble-btn" href="wars.html?id=${encodeURIComponent(article.id)}">
             Read Full Analysis
           </a>
         </div>
@@ -153,44 +155,47 @@ async function loadWars() {
   }
 }
 
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', () => {
-  // Check if we have URL parameters for individual article
-  if (id || title) {
-    renderWarArticle();
-    
-    // Ensure theme is properly applied after rendering
-    setTimeout(() => {
-      // Direct theme re-initialization
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const stored = localStorage.getItem('theme');
-      const isDark = stored ? stored === 'dark' : prefersDark;
-      
-      // Apply theme to body
-      document.body.classList.toggle('dark', isDark);
-      
-      // Update theme toggle button
-      const themeBtn = document.querySelector('#themeToggleBtn, .theme-toggle-top');
-      if (themeBtn) {
-        const icon = isDark ? 'fa-sun' : 'fa-moon';
-        const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-        themeBtn.innerHTML = `<i class="fas ${icon}"></i>`;
-        themeBtn.setAttribute('aria-label', label);
-        
-        // Ensure click handler works
-        themeBtn.onclick = () => {
-          const newDark = !document.body.classList.contains('dark');
-          document.body.classList.toggle('dark', newDark);
-          localStorage.setItem('theme', newDark ? 'dark' : 'light');
-          
-          const newIcon = newDark ? 'fa-sun' : 'fa-moon';
-          const newLabel = newDark ? 'Switch to light mode' : 'Switch to dark mode';
-          themeBtn.innerHTML = `<i class="fas ${newIcon}"></i>`;
-          themeBtn.setAttribute('aria-label', newLabel);
-        };
-      }
-    }, 100);
-  } else {
-    loadWarsList();
+// Load more button click handler
+if (loadMoreBtn) {
+  loadMoreBtn.addEventListener('click', loadWars);
+}
+
+// Infinite scroll
+window.addEventListener('scroll', () => {
+  if (
+    window.innerHeight + window.scrollY >=
+    document.body.offsetHeight - 300
+  ) {
+    console.log('📜 Scroll trigger - loading more wars');
+    loadWars();
   }
 });
+
+// Initial load
+loadWars();
+
+if (loadMoreBtn) {
+  console.log("🎯 Adding click listener to load more button");
+  loadMoreBtn.addEventListener("click", loadWars);
+} else {
+  console.log("❌ Cannot add listener - loadMoreBtn not found");
+}
+
+window.addEventListener("scroll", () => {
+  if (
+    window.innerHeight + window.scrollY >=
+    document.body.offsetHeight - 300
+  ) {
+    console.log("📜 Scroll trigger - loading more wars");
+    loadWars();
+  }
+});
+
+console.log("🚀 Starting initial wars load");
+
+// Check if we have URL parameters for individual article
+if (id) {
+  renderWarArticle();
+} else {
+  loadWars();
+}

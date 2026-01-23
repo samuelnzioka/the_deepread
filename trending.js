@@ -125,38 +125,11 @@ function renderSlides(slides) {
         console.log('Clicked trending item:', item);
         console.log('Available explainersData:', explainersData);
         console.log('Looking for ID:', item.id);
+        console.log('ExplainersData IDs:', explainersData.map(e => ({ id: e.id, title: e.title })));
         
-        // Find the corresponding explainer from the original data
-        const explainerItem = explainersData.find(explainer => explainer.id === item.id);
-        console.log('Found explainerItem:', explainerItem);
-        
-        if (explainerItem) {
-          const params = new URLSearchParams({
-            id: explainerItem.id,
-            title: explainerItem.title || '',
-            image: explainerItem.image || '',
-            summary: explainerItem.summary || '',
-            body: explainerItem.body || explainerItem.background || '',
-            source: explainerItem.source || '',
-            published: explainerItem.date || '',
-            url: explainerItem.url || ''
-          });
-          window.location.href = `explainer.html?${params.toString()}`;
-        } else {
-          // Use the item data directly as fallback
-          console.log('Using fallback data from item:', item);
-          const params = new URLSearchParams({
-            id: item.id,
-            title: item.title || '',
-            image: item.image || '',
-            summary: item.summary || '',
-            body: item.body || '',
-            source: item.source || '',
-            published: item.date || '',
-            url: item.url || ''
-          });
-          window.location.href = `explainer.html?${params.toString()}`;
-        }
+        // Use ultra-short URL - only pass ID
+        console.log('Using ultra-short URL with ID only');
+        window.location.href = `explainer.html?id=${encodeURIComponent(item.id)}`;
       };
       
       trendItem.innerHTML = `

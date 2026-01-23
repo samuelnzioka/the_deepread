@@ -134,38 +134,11 @@ function renderWarsSlides(slides) {
         console.log('Clicked wars item:', item);
         console.log('Available warsApiData:', warsApiData);
         console.log('Looking for ID:', item.id);
+        console.log('WarsApiData IDs:', warsApiData.map(w => ({ id: w.id, title: w.title })));
         
-        // Find the corresponding war from the original data
-        const warItem = warsApiData.find(war => war.id === item.id);
-        console.log('Found warItem:', warItem);
-        
-        if (warItem) {
-          const params = new URLSearchParams({
-            id: warItem.id,
-            title: warItem.title || '',
-            image: warItem.image || '',
-            summary: warItem.summary || '',
-            body: warItem.body || warItem.background || '',
-            source: warItem.source || '',
-            published: warItem.date || '',
-            url: warItem.url || ''
-          });
-          window.location.href = `wars.html?${params.toString()}`;
-        } else {
-          // Use the item data directly as fallback
-          console.log('Using fallback data from item:', item);
-          const params = new URLSearchParams({
-            id: item.id,
-            title: item.title || '',
-            image: item.image || '',
-            summary: item.summary || '',
-            body: item.body || '',
-            source: item.source || '',
-            published: item.date || '',
-            url: item.url || ''
-          });
-          window.location.href = `wars.html?${params.toString()}`;
-        }
+        // Use ultra-short URL - only pass ID
+        console.log('Using ultra-short URL with ID only');
+        window.location.href = `wars.html?id=${encodeURIComponent(item.id)}`;
       };
       
       trendItem.innerHTML = `
