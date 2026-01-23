@@ -74,15 +74,6 @@ function renderExplainer() {
         </div>
       `;
       
-      // Add go back functionality
-      const goBackBtn = document.createElement('button');
-      goBackBtn.className = 'go-back-btn';
-      goBackBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Go Back to Explainers';
-      goBackBtn.onclick = () => {
-        window.location.href = 'explainers.html';
-      };
-      explainerContainer.insertBefore(goBackBtn, explainerContainer.firstChild);
-      
       // Apply theme after content loads
       setTimeout(() => {
         const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
