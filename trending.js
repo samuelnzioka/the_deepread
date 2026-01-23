@@ -48,7 +48,11 @@ async function loadTrendingContent() {
       image: explainer.image && explainer.image !== '/assets/placeholder.jpg' 
         ? explainer.image 
         : `https://source.unsplash.com/200x120/?${encodeURIComponent(explainer.title || 'explainer')}`,
-      source: explainer.source || 'Unknown'
+      source: explainer.source || 'Unknown',
+      summary: explainer.summary || '',
+      body: explainer.body || explainer.background || '',
+      date: explainer.date || '',
+      url: explainer.url || ''
     }));
     
     console.log('Processed trending data:', trendingData);
@@ -114,13 +118,18 @@ function renderSlides(slides) {
     const slideContent = document.createElement('div');
     slideContent.className = 'slide-content';
     
-    slide.forEach(item => {
+    slide.forEach((item, itemIndex) => {
       const trendItem = document.createElement('div');
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
         console.log('Clicked trending item:', item);
-        // Pass all necessary data for explainer.js to work
+        console.log('Available explainersData:', explainersData);
+        console.log('Looking for ID:', item.id);
+        
+        // Find the corresponding explainer from the original data
         const explainerItem = explainersData.find(explainer => explainer.id === item.id);
+        console.log('Found explainerItem:', explainerItem);
+        
         if (explainerItem) {
           const params = new URLSearchParams({
             id: explainerItem.id,
@@ -134,8 +143,19 @@ function renderSlides(slides) {
           });
           window.location.href = `explainer.html?${params.toString()}`;
         } else {
-          // Fallback to ID only
-          window.location.href = `explainer.html?id=${encodeURIComponent(item.id)}`;
+          // Use the item data directly as fallback
+          console.log('Using fallback data from item:', item);
+          const params = new URLSearchParams({
+            id: item.id,
+            title: item.title || '',
+            image: item.image || '',
+            summary: item.summary || '',
+            body: item.body || '',
+            source: item.source || '',
+            published: item.date || '',
+            url: item.url || ''
+          });
+          window.location.href = `explainer.html?${params.toString()}`;
         }
       };
       

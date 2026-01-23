@@ -51,14 +51,54 @@ function renderExplainer() {
       </div>
     </div>
   `;
+  
+  // Ensure theme is applied after content is rendered
+  setTimeout(() => {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const stored = localStorage.getItem('theme');
+    const isDark = stored ? stored === 'dark' : prefersDark;
+    document.body.classList.toggle('dark', isDark);
+  }, 10);
 }
 
 // Render when page loads
 document.addEventListener('DOMContentLoaded', () => {
   renderExplainer();
   
+  // Ensure theme is properly applied after rendering
+  setTimeout(() => {
+    // Direct theme re-initialization
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const stored = localStorage.getItem('theme');
+    const isDark = stored ? stored === 'dark' : prefersDark;
+    
+    // Apply theme to body
+    document.body.classList.toggle('dark', isDark);
+    
+    // Update theme toggle button
+    const themeBtn = document.querySelector('#themeToggleBtn, .theme-toggle-top');
+    if (themeBtn) {
+      const icon = isDark ? 'fa-sun' : 'fa-moon';
+      const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+      themeBtn.innerHTML = `<i class="fas ${icon}"></i>`;
+      themeBtn.setAttribute('aria-label', label);
+      
+      // Ensure click handler works
+      themeBtn.onclick = () => {
+        const newDark = !document.body.classList.contains('dark');
+        document.body.classList.toggle('dark', newDark);
+        localStorage.setItem('theme', newDark ? 'dark' : 'light');
+        
+        const newIcon = newDark ? 'fa-sun' : 'fa-moon';
+        const newLabel = newDark ? 'Switch to light mode' : 'Switch to dark mode';
+        themeBtn.innerHTML = `<i class="fas ${newIcon}"></i>`;
+        themeBtn.setAttribute('aria-label', newLabel);
+      };
+    }
+  }, 100);
+  
   // Add go back functionality
-  const goBackBtn = document.getElementById('goBackBtn');
+  const goBackBtn = document.getElementById("goBackBtn");
   if (goBackBtn) {
     goBackBtn.addEventListener('click', () => {
       // Use browser back button to preserve scroll position

@@ -3,6 +3,7 @@ console.log('Wars-trending.js loaded successfully!');
 
 let currentWarsSlide = 0;
 let warsData = [];
+let warsApiData = []; // Make this global for access in click handlers
 let warsAutoScrollInterval;
 let warsRefreshInterval;
 
@@ -32,7 +33,7 @@ async function loadWarsContent() {
     const freshData = await warsResponse.json();
     console.log('Fetched fresh wars data:', freshData);
     
-    let warsApiData = freshData.articles || freshData.results || freshData.wars || [];
+    warsApiData = freshData.articles || freshData.results || freshData.wars || [];
     
     if (!Array.isArray(warsApiData) || warsApiData.length === 0) {
       console.log('No wars available - showing empty wars');
@@ -51,7 +52,10 @@ async function loadWarsContent() {
         ? war.image 
         : `https://source.unsplash.com/200x120/?${encodeURIComponent(war.title || 'war')}`,
       summary: war.summary || '',
-      source: war.source || 'Unknown'
+      body: war.body || war.background || '',
+      source: war.source || 'Unknown',
+      date: war.date || '',
+      url: war.url || ''
     }));
     
     console.log('Processed wars data:', warsData);
@@ -123,12 +127,45 @@ function renderWarsSlides(slides) {
     const slideContent = document.createElement('div');
     slideContent.className = 'slide-content';
     
-    slide.forEach(item => {
+    slide.forEach((item, itemIndex) => {
       const trendItem = document.createElement('div');
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
-        // Use existing system
-        window.location.href = `wars.html?id=${encodeURIComponent(item.id)}`;
+        console.log('Clicked wars item:', item);
+        console.log('Available warsApiData:', warsApiData);
+        console.log('Looking for ID:', item.id);
+        
+        // Find the corresponding war from the original data
+        const warItem = warsApiData.find(war => war.id === item.id);
+        console.log('Found warItem:', warItem);
+        
+        if (warItem) {
+          const params = new URLSearchParams({
+            id: warItem.id,
+            title: warItem.title || '',
+            image: warItem.image || '',
+            summary: warItem.summary || '',
+            body: warItem.body || warItem.background || '',
+            source: warItem.source || '',
+            published: warItem.date || '',
+            url: warItem.url || ''
+          });
+          window.location.href = `wars.html?${params.toString()}`;
+        } else {
+          // Use the item data directly as fallback
+          console.log('Using fallback data from item:', item);
+          const params = new URLSearchParams({
+            id: item.id,
+            title: item.title || '',
+            image: item.image || '',
+            summary: item.summary || '',
+            body: item.body || '',
+            source: item.source || '',
+            published: item.date || '',
+            url: item.url || ''
+          });
+          window.location.href = `wars.html?${params.toString()}`;
+        }
       };
       
       trendItem.innerHTML = `
