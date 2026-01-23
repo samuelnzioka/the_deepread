@@ -89,13 +89,37 @@ document.addEventListener('DOMContentLoaded', function() {
       loadMoreBtn.style.display = 'none';
     }
     
-    fetch(`https://the-terrific-proxy.onrender.com/api/wars/article?slug=${encodeURIComponent(slug)}`)
+    // Fetch all wars and find by slug (since slug endpoint doesn't exist)
+    fetch("https://the-terrific-proxy.onrender.com/api/wars?page=1")
       .then(res => {
         if (!res.ok) throw new Error("Not found");
         return res.json();
       })
+      .then(data => {
+        console.log("📄 Wars data received, searching for slug:", slug);
+        
+        // Find article by slug
+        const wars = data.articles || [];
+        let article = wars.find(w => {
+          const warSlug = w.slug || createSlugFromTitle(w.title);
+          return warSlug === slug;
+        });
+        
+        if (!article) {
+          throw new Error(`War article with slug "${slug}" not found`);
+        }
+        
+        console.log("📄 Found war article:", article);
+        
+        // Now fetch the full article using the ID
+        return fetch(`https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(article.id)}`);
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Article not found");
+        return res.json();
+      })
       .then(article => {
-        console.log("📄 War article data received:", article);
+        console.log("📄 Full war article data received:", article);
         renderFullWarArticle(article);
       })
       .catch(err => {
