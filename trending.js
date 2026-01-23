@@ -4,6 +4,17 @@ let trendingData = [];
 let autoScrollInterval;
 let refreshInterval;
 
+// Helper function to create slug from title
+function createSlugFromTitle(title) {
+  if (!title) return '';
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+}
+
 async function loadTrendingContent() {
   try {
     console.log('Loading trending content from explainers API...');
@@ -29,7 +40,8 @@ async function loadTrendingContent() {
     
     // Use exactly 6 explainers for trending (2 per slide, 3 slides total)
     trendingData = explainersData.slice(0, 6).map(explainer => ({
-      id: explainer.id, // ✅ CRITICAL: Include ID for full analysis
+      id: explainer.id, // CRITICAL: Include ID for full analysis
+      slug: explainer.slug || createSlugFromTitle(explainer.title),
       type: 'explainer',
       title: explainer.title || 'No title',
       image: explainer.image && explainer.image !== '/assets/placeholder.jpg' 
@@ -106,8 +118,9 @@ function renderSlides(slides) {
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
         console.log('Clicked trending item:', item);
-        // Simple redirect to explainers page (advertisement behavior)
-        window.location.href = `explainers.html?id=${encodeURIComponent(item.id)}`;
+        // Clean URL routing to article page
+        const slug = item.slug || createSlugFromTitle(item.title);
+        window.location.href = `/explainers/${slug}`;
       };
       
       trendItem.innerHTML = `

@@ -6,6 +6,17 @@ let warsData = [];
 let warsAutoScrollInterval;
 let warsRefreshInterval;
 
+// Helper function to create slug from title
+function createSlugFromTitle(title) {
+  if (!title) return '';
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+}
+
 async function loadWarsContent() {
   try {
     console.log('Loading wars content from wars API...');
@@ -33,6 +44,7 @@ async function loadWarsContent() {
     // Use exactly 4 wars for slideshow (2 per slide, 2 slides total)
     warsData = warsApiData.slice(0, 4).map(war => ({
       id: war.id,
+      slug: war.slug || createSlugFromTitle(war.title),
       type: 'war',
       title: war.title || 'No title',
       image: war.image && war.image !== '/assets/placeholder.jpg' 
@@ -115,8 +127,9 @@ function renderWarsSlides(slides) {
       const trendItem = document.createElement('div');
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
-        // Simple redirect to wars page (advertisement behavior)
-        window.location.href = `wars.html?id=${encodeURIComponent(item.id)}`;
+        // Clean URL routing to article page
+        const slug = item.slug || createSlugFromTitle(item.title);
+        window.location.href = `/wars/${slug}`;
       };
       
       trendItem.innerHTML = `

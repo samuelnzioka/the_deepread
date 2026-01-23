@@ -3,6 +3,17 @@ let currentSportsSlide = 0;
 let sportsData = [];
 let sportsAutoScrollInterval;
 
+// Helper function to create slug from title
+function createSlugFromTitle(title) {
+  if (!title) return '';
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+}
+
 // Load sports content from API
 async function loadSportsContent() {
   try {
@@ -29,6 +40,8 @@ async function loadSportsContent() {
     
     // Use exactly 6 sports for trending (2 slides with 3 items each)
     const processedSportsData = sportsData.slice(0, 6).map(sport => ({
+      id: sport.id,
+      slug: sport.slug || createSlugFromTitle(sport.title),
       type: 'sport',
       title: sport.title || 'No title',
       image: sport.image || sport.thumbnail || `https://picsum.photos/200/120?random=${Math.random()}`,
@@ -100,7 +113,9 @@ function renderSportsSlides(slides) {
       sportItem.className = 'trend-item';
       sportItem.onclick = () => {
         console.log('🏅 Clicked sports item:', item.title);
-        window.location.href = item.url;
+        // Clean URL routing to article page
+        const slug = item.slug || createSlugFromTitle(item.title);
+        window.location.href = `/sports/${slug}`;
       };
       
       sportItem.innerHTML = `
