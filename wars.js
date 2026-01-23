@@ -138,7 +138,16 @@ let loading = false;
 let hasMore = true;
 
 async function loadWars() {
-  if (loading || !hasMore) return;
+  console.log('🚀 loadWars() called');
+  console.log('🔍 loading:', loading);
+  console.log('🔍 hasMore:', hasMore);
+  console.log('🔍 page:', page);
+  console.log('🔍 container exists:', !!container);
+  
+  if (loading || !hasMore) {
+    console.log('⏸️ Exiting loadWars - loading:', loading, 'hasMore:', hasMore);
+    return;
+  }
   loading = true;
 
   console.log(`📰 Loading wars page ${page}`);
@@ -201,7 +210,9 @@ async function loadWars() {
 
   } catch (err) {
     console.error('❌ Error loading wars:', err);
-    container.innerHTML = '<p>Error loading wars articles. Please try again.</p>';
+    console.error('❌ Error details:', err.message);
+    console.error('❌ Error stack:', err.stack);
+    container.innerHTML = `<p>Error loading wars articles. Please try again. (${err.message})</p>`;
     loading = false;
   }
 }
