@@ -1,6 +1,7 @@
 // Trending Now Box - Gets content from explainers tab
 let currentSlide = 0;
 let trendingData = [];
+let explainersData = []; // Make this global for access in click handlers
 let autoScrollInterval;
 let refreshInterval;
 
@@ -29,7 +30,7 @@ async function loadTrendingContent() {
     const freshData = await explainersResponse.json();
     console.log('Fetched fresh explainers data:', freshData);
     
-    let explainersData = freshData.results || freshData.explainers || [];
+    explainersData = freshData.results || freshData.explainers || [];
     
     if (!Array.isArray(explainersData) || explainersData.length === 0) {
       console.log('No explainers available - showing empty trending');
@@ -118,8 +119,24 @@ function renderSlides(slides) {
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
         console.log('Clicked trending item:', item);
-        // Clean URL - only pass ID, let destination page fetch data
-        window.location.href = `explainer.html?id=${encodeURIComponent(item.id)}`;
+        // Pass all necessary data for explainer.js to work
+        const explainerItem = explainersData.find(explainer => explainer.id === item.id);
+        if (explainerItem) {
+          const params = new URLSearchParams({
+            id: explainerItem.id,
+            title: explainerItem.title || '',
+            image: explainerItem.image || '',
+            summary: explainerItem.summary || '',
+            body: explainerItem.body || explainerItem.background || '',
+            source: explainerItem.source || '',
+            published: explainerItem.date || '',
+            url: explainerItem.url || ''
+          });
+          window.location.href = `explainer.html?${params.toString()}`;
+        } else {
+          // Fallback to ID only
+          window.location.href = `explainer.html?id=${encodeURIComponent(item.id)}`;
+        }
       };
       
       trendItem.innerHTML = `
