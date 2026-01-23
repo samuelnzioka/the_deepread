@@ -9,6 +9,51 @@ let isLoading = false;
 let newestMemeTimestamp = null;
 
 /* =========================
+   MEME MODAL
+========================= */
+function openMemeModal(imageSrc, title) {
+  // Create modal overlay
+  const modal = document.createElement('div');
+  modal.className = 'meme-modal-overlay';
+  modal.innerHTML = `
+    <div class="meme-modal-content">
+      <button class="meme-modal-close" onclick="closeMemeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      <img src="${imageSrc}" alt="${title}" class="meme-modal-image">
+    </div>
+  `;
+  
+  // Add to body
+  document.body.appendChild(modal);
+  document.body.style.overflow = 'hidden';
+  
+  // Close on overlay click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeMemeModal();
+    }
+  });
+  
+  // Close on ESC key
+  const escapeHandler = (e) => {
+    if (e.key === 'Escape') {
+      closeMemeModal();
+      document.removeEventListener('keydown', escapeHandler);
+    }
+  };
+  document.addEventListener('keydown', escapeHandler);
+}
+
+function closeMemeModal() {
+  const modal = document.querySelector('.meme-modal-overlay');
+  if (modal) {
+    modal.remove();
+    document.body.style.overflow = '';
+  }
+}
+
+/* =========================
    LOAD MEMES
 ========================= */
 async function loadMemes(reset = false, prepend = false) {
@@ -50,7 +95,7 @@ async function loadMemes(reset = false, prepend = false) {
 
       card.innerHTML = prepend ? `
         <div class="new-badge">🆕 NEW</div>
-        <img src="${meme.image}" alt="Meme">
+        <img src="${meme.image}" alt="Meme" onclick="openMemeModal('${meme.image}', '${meme.title.replace(/'/g, "\\'")}')">
         <h3>${meme.title}</h3>
         <div class="context">${meme.subreddit}</div>
         <div class="meme-share">
@@ -79,7 +124,7 @@ async function loadMemes(reset = false, prepend = false) {
           </div>
         </div>
       ` : `
-        <img src="${meme.image}" alt="Meme">
+        <img src="${meme.image}" alt="Meme" onclick="openMemeModal('${meme.image}', '${meme.title.replace(/'/g, "\\'")}')">
         <h3>${meme.title}</h3>
         <div class="context">${meme.subreddit}</div>
         <div class="meme-share">

@@ -17,31 +17,79 @@ if (!loadMoreBtn) {
   console.log("✅ Load More button found");
 }
 
-// Handle URL parameters for individual war articles
+// Handle both clean URLs with slugs and old URLs with ID parameters
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
+// Extract slug from URL path for clean URLs
+const pathParts = window.location.pathname.split('/');
+const slug = pathParts[pathParts.length - 1];
+
+// Helper function to create slug from title
+function createSlugFromTitle(title) {
+  if (!title) return '';
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+}
+
 console.log("Wars page loaded with ID:", id);
+console.log("Wars page loaded with slug:", slug);
+console.log("Full URL path:", window.location.pathname);
 
 // Function to render individual war article
 function renderWarArticle() {
-  console.log("Rendering individual war article for ID:", id);
+  console.log("Rendering individual war article for ID:", id, "Slug:", slug);
   
   // Hide load more button for individual article view
   if (loadMoreBtn) {
     loadMoreBtn.style.display = 'none';
   }
 
-  // Fetch full article data
-  fetch(`https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(id)}`)
+  // Fetch full article data using ID or slug
+  let fetchUrl;
+  if (id) {
+    // Use individual article endpoint for ID (old URL format)
+    fetchUrl = `https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(id)}`;
+    console.log("Using individual article endpoint for ID:", id);
+  } else {
+    // Use list endpoint and find by slug (new clean URL format)
+    fetchUrl = 'https://the-terrific-proxy.onrender.com/api/wars?page=1';
+    console.log("Using list endpoint to find by slug:", slug);
+  }
+
+  fetch(fetchUrl)
     .then(res => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       return res.json();
     })
-    .then(article => {
-      console.log("Full war article data:", article);
+    .then(data => {
+      console.log("Wars API response:", data);
+      
+      let article;
+      if (id) {
+        // Direct article response (old URL format)
+        article = data;
+        console.log("Using direct article data:", article);
+      } else if (slug) {
+        // Find by slug in list (new clean URL format)
+        const wars = data.articles || data.results || [];
+        article = wars.find(w => {
+          const warSlug = w.slug || createSlugFromTitle(w.title);
+          return warSlug === slug;
+        });
+        console.log("Looking for war by slug:", slug);
+        console.log("Found war:", article);
+      }
+      
+      if (!article) {
+        throw new Error(`War article not found (ID: ${id}, Slug: ${slug})`);
+      }
       
       container.innerHTML = `
         <div class="explainer-content">
@@ -194,7 +242,7 @@ window.addEventListener("scroll", () => {
 console.log("🚀 Starting initial wars load");
 
 // Check if we have URL parameters for individual article
-if (id) {
+if (id || slug) {
   renderWarArticle();
 } else {
   loadWars();

@@ -1,7 +1,25 @@
+// Handle both clean URLs with slugs and old URLs with ID parameters
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
+// Extract slug from URL path for clean URLs
+const pathParts = window.location.pathname.split('/');
+const slug = pathParts[pathParts.length - 1];
+
+// Helper function to create slug from title
+function createSlugFromTitle(title) {
+  if (!title) return '';
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+}
+
 console.log("Explainer page loaded with ID:", id);
+console.log("Explainer page loaded with slug:", slug);
+console.log("Full URL path:", window.location.pathname);
 
 function renderExplainer() {
   const explainerContainer = document.getElementById("explainer");
@@ -11,7 +29,7 @@ function renderExplainer() {
     return;
   }
 
-  if (!id) {
+  if (!id && !slug) {
     explainerContainer.innerHTML = `
       <div class="error-message">
         <h2>No explainer data found</h2>
@@ -29,7 +47,7 @@ function renderExplainer() {
     </div>
   `;
 
-  // Fetch full explainer data using ID - fetch from list and find by ID
+  // Fetch full explainer data using ID or slug - fetch from list and find by ID or slug
   fetch('https://the-terrific-proxy.onrender.com/api/explainers?page=1')
     .then(res => {
       if (!res.ok) {
@@ -42,10 +60,23 @@ function renderExplainer() {
       
       // Find the explainer in the results array
       const explainers = data.results || data.explainers || [];
-      const explainer = explainers.find(e => e.id === id);
+      let explainer;
+      
+      if (id) {
+        // Find by ID (old URL format)
+        explainer = explainers.find(e => e.id === id);
+        console.log("Looking for explainer by ID:", id);
+      } else if (slug) {
+        // Find by slug (new clean URL format)
+        explainer = explainers.find(e => {
+          const explainerSlug = e.slug || createSlugFromTitle(e.title);
+          return explainerSlug === slug;
+        });
+        console.log("Looking for explainer by slug:", slug);
+      }
       
       if (!explainer) {
-        throw new Error(`Explainer with ID ${id} not found`);
+        throw new Error(`Explainer not found (ID: ${id}, Slug: ${slug})`);
       }
       
       console.log("Found explainer:", explainer);

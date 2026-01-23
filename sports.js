@@ -5,6 +5,29 @@
 const sportsContainer = document.getElementById("sports-feed");
 const sportsTabs = document.querySelectorAll(".sports-tab");
 
+// Handle both clean URLs with slugs and old URLs with ID parameters
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+// Extract slug from URL path for clean URLs
+const pathParts = window.location.pathname.split('/');
+const slug = pathParts[pathParts.length - 1];
+
+// Helper function to create slug from title
+function createSlugFromTitle(title) {
+  if (!title) return '';
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim('-');
+}
+
+console.log("Sports page loaded with ID:", id);
+console.log("Sports page loaded with slug:", slug);
+console.log("Full URL path:", window.location.pathname);
+
 let currentSport = "soccer";
 let currentPage = 1;
 let loading = false;
@@ -148,6 +171,110 @@ document.addEventListener("click", e => {
 });
 
 /* =========================
+   INDIVIDUAL SPORTS ARTICLE
+========================= */
+function renderSportsArticle() {
+  console.log("Rendering individual sports article for ID:", id, "Slug:", slug);
+  
+  if (!id && !slug) {
+    sportsContainer.innerHTML = `
+      <div class="error-message">
+        <h2>No sports article data found</h2>
+        <p>Please go back and select a sports article from the list.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Show loading state
+  sportsContainer.innerHTML = `
+    <div class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Loading sports article...</p>
+    </div>
+  `;
+
+  // Fetch sports data using ID or slug
+  fetch('https://the-terrific-proxy.onrender.com/api/sports?sport=soccer&page=1')
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      console.log("Sports API response:", data);
+      
+      // Find the sports article in the results array
+      const sports = data.articles || data.results || [];
+      let article;
+      
+      if (id) {
+        // Find by ID (old URL format)
+        article = sports.find(s => s.id === id);
+        console.log("Looking for sports article by ID:", id);
+      } else if (slug) {
+        // Find by slug (new clean URL format)
+        article = sports.find(s => {
+          const sportsSlug = s.slug || createSlugFromTitle(s.title);
+          return sportsSlug === slug;
+        });
+        console.log("Looking for sports article by slug:", slug);
+      }
+      
+      if (!article) {
+        throw new Error(`Sports article not found (ID: ${id}, Slug: ${slug})`);
+      }
+      
+      console.log("Found sports article:", article);
+      
+      // Add go back functionality
+      const goBackBtn = document.createElement('button');
+      goBackBtn.className = 'go-back-btn';
+      goBackBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Go Back to Sports';
+      goBackBtn.onclick = () => {
+        window.location.href = 'sports.html';
+      };
+      
+      // Render sports article content
+      sportsContainer.innerHTML = `
+        <div class="explainer-content">
+          ${article.image ? `<img src="${article.image}" alt="${article.title}" class="explainer-image">` : ''}
+          <h1 class="explainer-title">${article.title}</h1>
+          
+          <div class="explainer-meta">
+            <span class="source">${article.source || 'Unknown'}</span>
+            <span class="published">${article.date ? new Date(article.date).toLocaleDateString() : 'Unknown date'}</span>
+            ${article.url ? `<a href="${article.url}" target="_blank" class="original-link">View Original →</a>` : ''}
+          </div>
+          
+          <div class="explainer-summary">
+            <h2>Summary</h2>
+            <p>${article.summary || 'No summary available'}</p>
+          </div>
+          
+          <div class="explainer-body">
+            <h2>Full Analysis</h2>
+            ${article.body || article.content || 'No full analysis available'}
+          </div>
+        </div>
+      `;
+      
+      sportsContainer.insertBefore(goBackBtn, sportsContainer.firstChild);
+      
+    })
+    .catch(err => {
+      console.error('Error fetching sports article:', err);
+      sportsContainer.innerHTML = `
+        <div class="error-message">
+          <h2>Error loading sports article</h2>
+          <p>Could not load the sports article. Please try again.</p>
+        </div>
+      `;
+    });
+}
+
+/* =========================
    INFINITE SCROLL
 ========================= */
 sportsContainer.addEventListener("scroll", () => {
@@ -165,6 +292,12 @@ sportsContainer.addEventListener("scroll", () => {
 document.addEventListener("DOMContentLoaded", () => {
   if (sportsContainer) {
     console.log("🏆 Initializing sports section…");
+    
+    // Check if we have URL parameters for individual article
+    if (id || slug) {
+      renderSportsArticle();
+      return;
+    }
     
     // Restore scroll position and active tab if coming back from article
     const savedScrollPosition = sessionStorage.getItem('sportsScrollPosition');
