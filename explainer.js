@@ -29,16 +29,26 @@ function renderExplainer() {
     </div>
   `;
 
-  // Fetch full explainer data using ID
-  fetch(`https://the-terrific-proxy.onrender.com/api/explainers/${encodeURIComponent(id)}`)
+  // Fetch full explainer data using ID - fetch from list and find by ID
+  fetch('https://the-terrific-proxy.onrender.com/api/explainers?page=1')
     .then(res => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       return res.json();
     })
-    .then(explainer => {
-      console.log("Full explainer data:", explainer);
+    .then(data => {
+      console.log("Explainer API response:", data);
+      
+      // Find the explainer in the results array
+      const explainers = data.results || data.explainers || [];
+      const explainer = explainers.find(e => e.id === id);
+      
+      if (!explainer) {
+        throw new Error(`Explainer with ID ${id} not found`);
+      }
+      
+      console.log("Found explainer:", explainer);
       
       // Render explainer content
       explainerContainer.innerHTML = `
@@ -63,6 +73,15 @@ function renderExplainer() {
           </div>
         </div>
       `;
+      
+      // Add go back functionality
+      const goBackBtn = document.createElement('button');
+      goBackBtn.className = 'go-back-btn';
+      goBackBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Go Back to Explainers';
+      goBackBtn.onclick = () => {
+        window.location.href = 'explainers.html';
+      };
+      explainerContainer.insertBefore(goBackBtn, explainerContainer.firstChild);
       
       // Apply theme after content loads
       setTimeout(() => {

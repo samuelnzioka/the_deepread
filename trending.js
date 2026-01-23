@@ -123,12 +123,13 @@ function renderSlides(slides) {
       trendItem.className = 'trend-item';
       trendItem.onclick = () => {
         console.log('Clicked trending item:', item);
+        console.log('Item ID:', item.id);
+        console.log('Item ID type:', typeof item.id);
         console.log('Available explainersData:', explainersData);
-        console.log('Looking for ID:', item.id);
-        console.log('ExplainersData IDs:', explainersData.map(e => ({ id: e.id, title: e.title })));
+        console.log('ExplainersData IDs:', explainersData.map(e => ({ id: e.id, idType: typeof e.id, title: e.title })));
         
         // Use ultra-short URL - only pass ID
-        console.log('Using ultra-short URL with ID only');
+        console.log('Using ultra-short URL with ID only:', item.id);
         window.location.href = `explainer.html?id=${encodeURIComponent(item.id)}`;
       };
       
