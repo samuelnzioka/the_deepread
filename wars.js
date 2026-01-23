@@ -222,26 +222,6 @@ window.addEventListener('scroll', () => {
   }
 });
 
-// Initial load
-loadWars();
-
-if (loadMoreBtn) {
-  console.log("🎯 Adding click listener to load more button");
-  loadMoreBtn.addEventListener("click", loadWars);
-} else {
-  console.log("❌ Cannot add listener - loadMoreBtn not found");
-}
-
-window.addEventListener("scroll", () => {
-  if (
-    window.innerHeight + window.scrollY >=
-    document.body.offsetHeight - 300
-  ) {
-    console.log("📜 Scroll trigger - loading more wars");
-    loadWars();
-  }
-});
-
 console.log("🚀 Starting initial wars load");
 
 // Check if we have URL parameters for individual article
