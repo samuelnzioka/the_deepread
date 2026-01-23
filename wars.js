@@ -25,6 +25,9 @@ const id = params.get("id");
 const pathParts = window.location.pathname.split('/');
 const slug = pathParts[pathParts.length - 1];
 
+// Only consider it a slug if it's not a filename (doesn't contain .html)
+const validSlug = slug && !slug.includes('.html') ? slug : null;
+
 // Helper function to create slug from title
 function createSlugFromTitle(title) {
   if (!title) return '';
@@ -37,12 +40,12 @@ function createSlugFromTitle(title) {
 }
 
 console.log("Wars page loaded with ID:", id);
-console.log("Wars page loaded with slug:", slug);
+console.log("Wars page loaded with slug:", validSlug);
 console.log("Full URL path:", window.location.pathname);
 
 // Function to render individual war article
 function renderWarArticle() {
-  console.log("Rendering individual war article for ID:", id, "Slug:", slug);
+  console.log("Rendering individual war article for ID:", id, "Slug:", validSlug);
   
   // Hide load more button for individual article view
   if (loadMoreBtn) {
@@ -55,10 +58,10 @@ function renderWarArticle() {
     // Use individual article endpoint for ID (old URL format)
     fetchUrl = `https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(id)}`;
     console.log("Using individual article endpoint for ID:", id);
-  } else {
+  } else if (validSlug) {
     // Use list endpoint and find by slug (new clean URL format)
     fetchUrl = 'https://the-terrific-proxy.onrender.com/api/wars?page=1';
-    console.log("Using list endpoint to find by slug:", slug);
+    console.log("Using list endpoint to find by slug:", validSlug);
   }
 
   fetch(fetchUrl)
@@ -76,19 +79,19 @@ function renderWarArticle() {
         // Direct article response (old URL format)
         article = data;
         console.log("Using direct article data:", article);
-      } else if (slug) {
+      } else if (validSlug) {
         // Find by slug in list (new clean URL format)
         const wars = data.articles || data.results || [];
         article = wars.find(w => {
           const warSlug = w.slug || createSlugFromTitle(w.title);
-          return warSlug === slug;
+          return warSlug === validSlug;
         });
-        console.log("Looking for war by slug:", slug);
+        console.log("Looking for war by slug:", validSlug);
         console.log("Found war:", article);
       }
       
       if (!article) {
-        throw new Error(`War article not found (ID: ${id}, Slug: ${slug})`);
+        throw new Error(`War article not found (ID: ${id}, Slug: ${validSlug})`);
       }
       
       container.innerHTML = `
@@ -242,7 +245,7 @@ window.addEventListener("scroll", () => {
 console.log("🚀 Starting initial wars load");
 
 // Check if we have URL parameters for individual article
-if (id || slug) {
+if (id || validSlug) {
   renderWarArticle();
 } else {
   loadWars();
