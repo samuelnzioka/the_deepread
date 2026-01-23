@@ -183,6 +183,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // Clear loading spinner only on first page
       if (page === 1) {
         container.innerHTML = '';
+      } else {
+        // For subsequent pages, don't clear existing content
+        console.log('📄 Appending to existing content (page', page, ')');
       }
 
       articles.forEach(article => {
@@ -218,7 +221,13 @@ document.addEventListener('DOMContentLoaded', function() {
       console.error('❌ Error loading wars:', err);
       console.error('❌ Error details:', err.message);
       console.error('❌ Error stack:', err.stack);
-      container.innerHTML = `<p>Error loading wars articles. Please try again. (${err.message})</p>`;
+      
+      // Only show error if container is empty or has loading content
+      if (!container.innerHTML || container.innerHTML.includes('Loading')) {
+        container.innerHTML = `<p>Error loading wars articles. Please try again. (${err.message})</p>`;
+      } else {
+        console.log('⚠️ Not showing error - content already exists');
+      }
       loading = false;
     }
   }
@@ -228,15 +237,20 @@ document.addEventListener('DOMContentLoaded', function() {
     loadMoreBtn.addEventListener('click', loadWars);
   }
 
-  // Infinite scroll
+  // Infinite scroll - add delay to prevent immediate triggering
+  let scrollTimeout;
   window.addEventListener('scroll', () => {
-    if (
-      window.innerHeight + window.scrollY >=
-      document.body.offsetHeight - 300
-    ) {
-      console.log('📜 Scroll trigger - loading more wars');
-      loadWars();
-    }
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      if (
+        !loading && hasMore &&
+        window.innerHeight + window.scrollY >=
+        document.body.offsetHeight - 500
+      ) {
+        console.log('📜 Scroll trigger - loading more wars');
+        loadWars();
+      }
+    }, 100); // 100ms delay
   });
 
   console.log("🚀 Starting initial wars load");
