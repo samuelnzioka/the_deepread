@@ -345,6 +345,7 @@ if (container) {
 // 🛠️ LOAD FULL EXPLAINER FUNCTION
 function loadFullExplainer(id) {
   console.log("📄 Loading full explainer for ID:", id);
+  console.log("🎯 Container element:", container);
   
   // Show loading state
   container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading full analysis...</div>';
@@ -356,10 +357,13 @@ function loadFullExplainer(id) {
       return res.json();
     })
     .then(data => {
-      console.log("📄 Explainers data received, searching for ID:", id);
+      console.log("📄 Explainers data received:", data);
+      console.log("📄 Searching for ID:", id);
       
       // Find explainer by ID
       const explainers = data.explainers || data.results || data.articles || [];
+      console.log("📄 Available explainers:", explainers.length);
+      
       const explainer = explainers.find(e => e.id === id);
       
       if (!explainer) {
@@ -367,6 +371,11 @@ function loadFullExplainer(id) {
       }
       
       console.log("📄 Found explainer:", explainer);
+      console.log("📄 Explainer title:", explainer.title);
+      console.log("📄 Explainer has image:", !!explainer.image);
+      console.log("📄 Explainer has summary:", !!explainer.summary);
+      console.log("📄 Explainer has body:", !!explainer.body);
+      
       renderFullExplainer(explainer);
     })
     .catch(err => {
@@ -387,8 +396,9 @@ function renderFullExplainer(explainer) {
   if (!container) return;
   
   console.log("📄 Rendering full explainer:", explainer.title);
+  console.log("🎯 Container exists:", !!container);
   
-  container.innerHTML = `
+  const fullHTML = `
     <div class="explainer-content">
       <button class="go-back-btn" onclick="location.reload()">
         <i class="fas fa-arrow-left"></i> Back to Explainers
@@ -414,6 +424,11 @@ function renderFullExplainer(explainer) {
       </div>
     </div>
   `;
+  
+  console.log("📄 Setting container HTML...");
+  container.innerHTML = fullHTML;
+  console.log("📄 Container HTML set successfully");
+  console.log("📄 Container content length:", container.innerHTML.length);
 }
 
 // Initial load - wait for DOM to be ready
