@@ -2,12 +2,12 @@ console.log("🔍 Wars page loaded");
 
 // Wait for DOM to be ready before accessing elements
 document.addEventListener('DOMContentLoaded', function() {
-  // 🛠️ SLUG DETECTION FROM QUERY PARAMETERS
-  const params = new URLSearchParams(window.location.search);
-  const slug = params.get("slug");
+  // 🛠️ SLUG DETECTION FROM URL PATH
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  const slug = pathParts.length > 1 ? pathParts[pathParts.length - 1] : null;
   
   console.log('🔍 Full pathname:', window.location.pathname);
-  console.log('🔍 Search params:', window.location.search);
+  console.log('🔍 Path parts:', pathParts);
   console.log('🔍 Detected slug:', slug);
   
   // 🛠️ SPLIT LOGIC: LIST vs ARTICLE (CRITICAL)
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="explainer-content">
           <h3>${article.title}</h3>
           <p>${article.summary}</p>
-          <a href="wars.html?slug=${articleSlug}" class="bubble-btn read-full">
+          <a href="/wars/${articleSlug}" class="bubble-btn read-full">
             Read full analysis →
           </a>
         </div>
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (container) {
           container.innerHTML = `
             <p>War article not found.</p>
-            <a href="wars.html">← Back to Wars</a>
+            <a href="/wars">← Back to Wars</a>
           `;
         }
       });
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     goBackBtn.className = 'go-back-btn';
     goBackBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Wars';
     goBackBtn.onclick = () => {
-      window.location.href = 'wars.html';
+      window.location.href = '/wars';
     };
     container.insertBefore(goBackBtn, container.firstChild);
   }
