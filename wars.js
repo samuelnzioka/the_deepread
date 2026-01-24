@@ -2,22 +2,9 @@ console.log("🔍 Wars page loaded");
 
 // Wait for DOM to be ready before accessing elements
 document.addEventListener('DOMContentLoaded', function() {
-  // 🛠️ SLUG DETECTION FROM QUERY PARAMETERS
-  const params = new URLSearchParams(window.location.search);
-  const slug = params.get("slug");
-  
-  console.log('🔍 Full pathname:', window.location.pathname);
-  console.log('🔍 Search params:', window.location.search);
-  console.log('🔍 Detected slug:', slug);
-  
-  // 🛠️ SPLIT LOGIC: LIST vs ARTICLE (CRITICAL)
-  if (!slug) {
-    console.log("📋 No slug detected - loading wars list");
-    loadWarsList();
-  } else {
-    console.log("📄 Slug detected - loading individual article:", slug);
-    loadWarArticle(slug);
-  }
+  // 🛠️ SIMPLIFIED LOGIC: Always load wars list
+  console.log("📋 Loading wars list");
+  loadWarsList();
   
   const container = document.getElementById("wars-feed");
   const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -66,86 +53,76 @@ document.addEventListener('DOMContentLoaded', function() {
       // Create slug from title if not available
       const articleSlug = article.slug || createSlugFromTitle(article.title);
       
-      console.log('📄 Article:', article.title);
-      console.log('📄 Original slug:', article.slug);
-      console.log('📄 Generated slug:', articleSlug);
-      console.log('📄 Full URL:', `/wars/${articleSlug}`);
-      
       articleCard.innerHTML = `
         ${article.image ? `<img src="${article.image}" alt="${article.title}" />` : ''}
         <div class="explainer-content">
           <h3>${article.title}</h3>
           <p>${article.summary}</p>
-          <a href="wars.html?slug=${articleSlug}" class="bubble-btn read-full">
+          <button class="bubble-btn read-full" data-slug="${articleSlug}" data-id="${article.id}">
             Read full analysis →
-          </a>
+          </button>
         </div>
       `;
+      
+      // Add click handler for the button
+      const readFullBtn = articleCard.querySelector('.read-full');
+      readFullBtn.addEventListener('click', function() {
+        const slug = this.getAttribute('data-slug');
+        const id = this.getAttribute('data-id');
+        loadFullAnalysis(slug, id);
+      });
       
       container.appendChild(articleCard);
     });
   }
 
-  // 🛠️ STEP 5: IMPLEMENT loadWarArticle(slug) (FULL PAGE)
-  function loadWarArticle(slug) {
-    console.log("📄 Loading war article for slug:", slug);
+  // 🛠️ LOAD FULL ANALYSIS FUNCTION
+  function loadFullAnalysis(slug, id) {
+    console.log("📄 Loading full analysis for slug:", slug, "ID:", id);
     
     // Hide load more button for individual article view
     if (loadMoreBtn) {
       loadMoreBtn.style.display = 'none';
     }
     
-    // Fetch all wars and find by slug (since slug endpoint doesn't exist)
-    fetch("https://the-terrific-proxy.onrender.com/api/wars?page=1")
+    // Show loading state
+    container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading full analysis...</div>';
+    
+    // Fetch full article using ID (more reliable than slug)
+    fetch(`https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(id)}`)
       .then(res => {
-        if (!res.ok) throw new Error("Not found");
-        return res.json();
-      })
-      .then(data => {
-        console.log("📄 Wars data received, searching for slug:", slug);
-        
-        // Find article by slug
-        const wars = data.articles || [];
-        let article = wars.find(w => {
-          const warSlug = w.slug || createSlugFromTitle(w.title);
-          return warSlug === slug;
-        });
-        
-        if (!article) {
-          throw new Error(`War article with slug "${slug}" not found`);
-        }
-        
-        console.log("📄 Found war article:", article);
-        
-        // Now fetch the full article using the ID
-        return fetch(`https://the-terrific-proxy.onrender.com/api/wars/article?id=${encodeURIComponent(article.id)}`);
-      })
-      .then(res => {
-        if (!res.ok) throw new Error("Article not found");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
       })
       .then(article => {
-        console.log("📄 Full war article data received:", article);
-        renderFullWarArticle(article);
+        console.log("📄 Full article data received:", article);
+        renderFullAnalysis(article);
       })
       .catch(err => {
-        console.error('❌ Error loading war article:', err);
-        if (container) {
-          container.innerHTML = `
-            <p>War article not found.</p>
-            <a href="wars.html">← Back to Wars</a>
-          `;
-        }
+        console.error('❌ Error loading full analysis:', err);
+        container.innerHTML = `
+          <div class="error-message">
+            <h2>Failed to Load Analysis</h2>
+            <p>Unable to load the full analysis. Please try again later.</p>
+            <button class="bubble-btn" onclick="location.reload()">
+              <i class="fas fa-redo"></i> Try Again
+            </button>
+          </div>
+        `;
       });
   }
 
-  function renderFullWarArticle(article) {
+  function renderFullAnalysis(article) {
     if (!container) return;
     
-    console.log("📄 Rendering full war article:", article.title);
+    console.log("📄 Rendering full analysis:", article.title);
     
     container.innerHTML = `
       <div class="explainer-content">
+        <button class="go-back-btn" onclick="location.reload()">
+          <i class="fas fa-arrow-left"></i> Back to Wars List
+        </button>
+        
         ${article.image ? `<img src="${article.image}" alt="${article.title}" class="explainer-image">` : ''}
         <h1 class="explainer-title">${article.title}</h1>
         
@@ -162,19 +139,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <div class="explainer-body">
           <h2>Full Analysis</h2>
-          ${article.body || article.background || 'No full analysis available'}
+          ${article.body || article.background || article.bodyText || 'No full analysis available'}
         </div>
       </div>
     `;
-    
-    // Add go back functionality
-    const goBackBtn = document.createElement('button');
-    goBackBtn.className = 'go-back-btn';
-    goBackBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Wars';
-    goBackBtn.onclick = () => {
-      window.location.href = 'wars.html';
-    };
-    container.insertBefore(goBackBtn, container.firstChild);
   }
 
   // Helper function to create slug from title
