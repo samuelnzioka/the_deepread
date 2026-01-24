@@ -16,95 +16,6 @@ let page = 1;
 let loading = false;
 let explainers = [];
 
-// 🛠️ LOAD FULL EXPLAINER FUNCTION
-function loadFullExplainer(id) {
-  console.log("📄 Loading full explainer for ID:", id);
-  console.log("🎯 Container element:", container);
-  
-  // Show loading state
-  container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading full analysis...</div>';
-  
-  // Fetch full explainer using ID
-  fetch(`https://the-terrific-proxy.onrender.com/api/explainers?page=1`)
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      console.log("📄 Explainers data received:", data);
-      console.log("📄 Searching for ID:", id);
-      
-      // Find explainer by ID
-      const explainersList = data.explainers || data.results || data.articles || [];
-      console.log("📄 Available explainers:", explainersList.length);
-      
-      const explainer = explainersList.find(e => e.id === id);
-      
-      if (!explainer) {
-        throw new Error(`Explainer with ID "${id}" not found`);
-      }
-      
-      console.log("📄 Found explainer:", explainer);
-      console.log("📄 Explainer title:", explainer.title);
-      console.log("📄 Explainer has image:", !!explainer.image);
-      console.log("📄 Explainer has summary:", !!explainer.summary);
-      console.log("📄 Explainer has body:", !!explainer.body);
-      
-      renderFullExplainer(explainer);
-    })
-    .catch(err => {
-      console.error('❌ Error loading full explainer:', err);
-      container.innerHTML = `
-        <div class="error-message">
-          <h2>Failed to Load Analysis</h2>
-          <p>Unable to load the full analysis. Please try again later.</p>
-          <button class="bubble-btn" onclick="location.reload()">
-            <i class="fas fa-redo"></i> Try Again
-          </button>
-        </div>
-      `;
-    });
-}
-
-function renderFullExplainer(explainer) {
-  if (!container) return;
-  
-  console.log("📄 Rendering full explainer:", explainer.title);
-  console.log("🎯 Container exists:", !!container);
-  
-  const fullHTML = `
-    <div class="explainer-content">
-      <button class="go-back-btn" onclick="location.reload()">
-        <i class="fas fa-arrow-left"></i> Back to Explainers
-      </button>
-      
-      ${explainer.image ? `<img src="${explainer.image}" alt="${explainer.title}" class="explainer-image">` : ''}
-      <h1 class="explainer-title">${explainer.title}</h1>
-      
-      <div class="explainer-meta">
-        <span class="source">${explainer.source || 'Unknown'}</span>
-        <span class="published">${explainer.published ? new Date(explainer.published).toLocaleDateString() : 'Unknown date'}</span>
-        ${explainer.url ? `<a href="${explainer.url}" target="_blank" class="original-link">View Original →</a>` : ''}
-      </div>
-      
-      <div class="explainer-summary">
-        <h2>Summary</h2>
-        <p>${explainer.summary || 'No summary available'}</p>
-      </div>
-      
-      <div class="explainer-body">
-        <h2>Full Analysis</h2>
-        ${explainer.body || explainer.content || 'No full analysis available'}
-      </div>
-    </div>
-  `;
-  
-  console.log("📄 Setting container HTML...");
-  container.innerHTML = fullHTML;
-  console.log("📄 Container HTML set successfully");
-  console.log("📄 Container content length:", container.innerHTML.length);
-}
-
 async function loadExplainers(reset = false) {
   if (loading) return;
   loading = true;
@@ -187,7 +98,7 @@ async function loadExplainers(reset = false) {
             <span class="source">${item.source}</span>
             <span class="date">${new Date(item.published).toLocaleDateString()}</span>
           </div>
-          <button class="bubble-btn read-full-btn" data-id="${item.id}">
+          <button class="read-full-btn" data-id="${item.id}" data-title="${encodeURIComponent(item.title)}" data-image="${item.image || ''}" data-summary="${encodeURIComponent(item.summary || '')}" data-body="${encodeURIComponent(item.body || '')}" data-source="${encodeURIComponent(item.source)}" data-published="${item.published}" data-url="${encodeURIComponent(item.url || '')}">
             Read Full Analysis →
           </button>
         </div>
@@ -356,7 +267,7 @@ if (refreshBtn) {
                 <span class="source">${item.source}</span>
                 <span class="date">${new Date(item.published).toLocaleDateString()}</span>
               </div>
-              <button class="bubble-btn read-full-btn" data-id="${item.id}">
+              <button class="read-full-btn" data-id="${item.id}" data-title="${encodeURIComponent(item.title)}" data-image="${item.image || ''}" data-summary="${encodeURIComponent(item.summary || '')}" data-body="${encodeURIComponent(item.body || '')}" data-source="${encodeURIComponent(item.source)}" data-published="${item.published}" data-url="${encodeURIComponent(item.url || '')}">
                 Read Full Analysis →
               </button>
             </div>
@@ -421,13 +332,35 @@ if (refreshBtn) {
   console.error('Refresh button not found!');
 }
 
-// Handle "Read Full Analysis" button clicks - NEW SYSTEM
+// Handle "Read Full Analysis" button clicks - ORIGINAL NAVIGATION SYSTEM
 if (container) {
   container.addEventListener('click', (e) => {
     if (e.target.classList.contains('read-full-btn')) {
       const button = e.target;
       const id = button.dataset.id;
-      loadFullExplainer(id);
+      
+      // Find the explainer data from the cached data
+      const cachedExplainers = JSON.parse(localStorage.getItem('cached_explainers') || '[]');
+      const explainer = cachedExplainers.find(e => e.id === id);
+      
+      if (explainer) {
+        // Navigate to explainer.html with all data as query parameters
+        const params = new URLSearchParams({
+          id: explainer.id,
+          title: explainer.title,
+          image: explainer.image || '',
+          summary: explainer.summary || '',
+          body: explainer.body || '',
+          source: explainer.source || '',
+          published: explainer.published || '',
+          url: explainer.url || ''
+        });
+        
+        // Navigate to explainer page in same tab
+        window.location.href = `explainer.html?${params.toString()}`;
+      } else {
+        console.error('Explainer not found in cache');
+      }
     }
   });
 }
