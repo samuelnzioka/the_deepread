@@ -4,7 +4,6 @@ console.log("🔍 Wars page loaded");
 document.addEventListener('DOMContentLoaded', function() {
   // 🛠️ SIMPLIFIED LOGIC: Always load wars list
   console.log("📋 Loading wars list");
-  loadWarsList();
   
   const container = document.getElementById("wars-feed");
   const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -12,38 +11,77 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log("🎯 Container element:", container);
   console.log("🎯 Load More button:", loadMoreBtn);
 
-  // 🛠️ STEP 4: IMPLEMENT loadWarsList() (CARDS)
-  function loadWarsList() {
-    console.log("📋 Loading wars list...");
+  // Pagination variables
+  let currentPage = 1;
+  let isLoading = false;
+  let hasMoreContent = true;
+
+  // 🛠️ IMPLEMENT loadWarsList() (CARDS) with pagination
+  function loadWarsList(append = false) {
+    if (isLoading || !hasMoreContent) return;
     
-    fetch("https://the-terrific-proxy.onrender.com/api/wars?page=1")
+    console.log("📋 Loading wars list - Page:", currentPage);
+    isLoading = true;
+    
+    // Show loading indicator
+    if (loadMoreBtn) {
+      loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+      loadMoreBtn.disabled = true;
+    }
+    
+    fetch(`https://the-terrific-proxy.onrender.com/api/wars?page=${currentPage}`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
       })
       .then(data => {
         console.log("📄 Wars data received:", data);
-        renderWarCards(data.articles || []);
+        const articles = data.articles || [];
+        
+        if (articles.length === 0) {
+          hasMoreContent = false;
+          if (loadMoreBtn) {
+            loadMoreBtn.style.display = 'none';
+          }
+          if (!append) {
+            container.innerHTML = '<p>No wars articles available at the moment.</p>';
+          }
+          return;
+        }
+        
+        renderWarCards(articles, append);
+        currentPage++;
+        
+        // Reset load more button
+        if (loadMoreBtn) {
+          loadMoreBtn.innerHTML = 'Load More Wars';
+          loadMoreBtn.disabled = false;
+          loadMoreBtn.style.display = 'block';
+        }
       })
       .catch(err => {
         console.error('❌ Error loading wars list:', err);
-        if (container) {
+        if (container && !append) {
           container.innerHTML = "<p>Error loading wars.</p>";
         }
+        if (loadMoreBtn) {
+          loadMoreBtn.innerHTML = 'Load More Wars';
+          loadMoreBtn.disabled = false;
+        }
+      })
+      .finally(() => {
+        isLoading = false;
       });
   }
 
-  function renderWarCards(articles) {
+  function renderWarCards(articles, append = false) {
     if (!container) return;
     
-    console.log(`📰 Rendering ${articles.length} war cards`);
+    console.log(`📰 Rendering ${articles.length} war cards (append: ${append})`);
     
-    // Clear existing content
-    container.innerHTML = '';
-    
-    if (articles.length === 0) {
-      container.innerHTML = '<p>No wars articles available at the moment.</p>';
-      return;
+    // Clear existing content only if not appending
+    if (!append) {
+      container.innerHTML = '';
     }
     
     articles.forEach(article => {
@@ -155,4 +193,36 @@ document.addEventListener('DOMContentLoaded', function() {
       .replace(/-+/g, '-')
       .trim('-');
   }
+
+  // 🛠️ LOAD MORE BUTTON FUNCTIONALITY
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', function() {
+      loadWarsList(true); // Append new content
+    });
+  }
+
+  // 🛠️ INFINITE SCROLL FUNCTIONALITY
+  function handleInfiniteScroll() {
+    if (isLoading || !hasMoreContent) return;
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    
+    // Load more when user is within 500px of bottom
+    if (scrollTop + windowHeight >= documentHeight - 500) {
+      console.log("🔄 Infinite scroll triggered - loading more wars");
+      loadWarsList(true); // Append new content
+    }
+  }
+
+  // Add scroll event listener with debounce
+  let scrollTimeout;
+  window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(handleInfiniteScroll, 100);
+  });
+
+  // 🛠️ INITIAL LOAD
+  loadWarsList(); // Load first page
 });
