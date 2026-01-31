@@ -48,30 +48,30 @@ async function loadExplainers(reset = false) {
     console.log('Data keys:', Object.keys(data));
     
     // Handle different possible response structures
-    let explainers = null;
+    let fetchedExplainers = null;
     
     if (data.explainers && Array.isArray(data.explainers)) {
-      explainers = data.explainers;
+      fetchedExplainers = data.explainers;
       console.log('Using data.explainers structure');
     } else if (data.response && data.response.results && Array.isArray(data.response.results)) {
-      explainers = data.response.results;
+      fetchedExplainers = data.response.results;
       console.log('Using data.response.results structure');
     } else if (data.results && Array.isArray(data.results)) {
-      explainers = data.results;
+      fetchedExplainers = data.results;
       console.log('Using data.results structure');
     } else if (Array.isArray(data)) {
-      explainers = data;
+      fetchedExplainers = data;
       console.log('Using direct array structure');
     } else {
       console.log('No valid explainers array found in response');
       console.log('Available properties:', Object.keys(data));
     }
     
-    console.log('Explainers array:', explainers);
-    console.log('Explainers type:', typeof explainers);
-    console.log('Explainers length:', explainers ? explainers.length : 'N/A');
+    console.log('Explainers array:', fetchedExplainers);
+    console.log('Explainers type:', typeof fetchedExplainers);
+    console.log('Explainers length:', fetchedExplainers ? fetchedExplainers.length : 'N/A');
     
-    if (!explainers || explainers.length === 0) {
+    if (!fetchedExplainers || fetchedExplainers.length === 0) {
       console.log('No explainers found');
       loadingDiv.style.display = "none";
       container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-muted);">No explainers found. The data source may be outdated.</p>';
@@ -79,9 +79,9 @@ async function loadExplainers(reset = false) {
     }
     
     // Process explainers
-    console.log(`Processing ${explainers.length} explainers`);
+    console.log(`Processing ${fetchedExplainers.length} explainers`);
 
-    explainers.forEach((item, index) => {
+    fetchedExplainers.forEach((item, index) => {
       const card = document.createElement("div");
       card.className = "explainer-card";
       
@@ -108,9 +108,9 @@ async function loadExplainers(reset = false) {
     });
 
     // Cache the data for trending
-    localStorage.setItem('cached_explainers', JSON.stringify(explainers));
+    localStorage.setItem('cached_explainers', JSON.stringify(fetchedExplainers));
     console.log('📦 Cached explainers data to localStorage');
-    console.log('📊 Cached data sample:', explainers.slice(0, 2).map(e => ({
+    console.log('📊 Cached data sample:', fetchedExplainers.slice(0, 2).map(e => ({
       id: e.id,
       title: e.title,
       hasBody: !!e.body,
@@ -340,46 +340,34 @@ if (refreshBtn) {
   console.error('Refresh button not found!');
 }
 
-// Handle "Read Full Analysis" button clicks - ORIGINAL NAVIGATION SYSTEM
+// Handle "Read Full Analysis" button clicks - BULLETPROOF FIX
 if (container) {
   container.addEventListener('click', (e) => {
-    if (e.target.classList.contains('read-full-btn')) {
-      const button = e.target;
-      const id = button.dataset.id;
-      
-      console.log("🔍 Read Full Analysis clicked for ID:", id);
-      
-      // Find the explainer data from the cached data
-      const cachedExplainers = JSON.parse(localStorage.getItem('cached_explainers') || '[]');
-      const explainer = cachedExplainers.find(e => e.id === id);
-      
-      console.log("📄 Found explainer in cache:", explainer);
-      console.log("📄 Explainer has body:", !!explainer?.body);
-      console.log("📄 Explainer has content:", !!explainer?.content);
-      console.log("📄 Explainer body length:", explainer?.body?.length || 0);
-      console.log("📄 Explainer content length:", explainer?.content?.length || 0);
-      
-      if (explainer) {
-        // Navigate to explainer.html with all data as query parameters
-        const params = new URLSearchParams({
-          id: explainer.id,
-          title: explainer.title,
-          image: explainer.image || '',
-          summary: explainer.summary || '',
-          body: explainer.body || explainer.content || '', // Use content as fallback
-          source: explainer.source || '',
-          published: explainer.published || '',
-          url: explainer.url || ''
-        });
-        
-        console.log("🚀 Navigating to explainer.html with params:", params.toString());
-        // Navigate to explainer page in same tab
-        window.location.href = `explainer.html?${params.toString()}`;
-      } else {
-        console.error('❌ Explainer not found in cache for ID:', id);
-        console.log("📄 Available cached IDs:", cachedExplainers.map(e => e.id));
-      }
+    const button = e.target.closest('.read-full-btn');
+    if (!button) return;
+
+    const explainer = {
+      id: button.dataset.id,
+      title: decodeURIComponent(button.dataset.title || ''),
+      image: button.dataset.image || '',
+      summary: decodeURIComponent(button.dataset.summary || ''),
+      body: decodeURIComponent(button.dataset.body || ''),
+      source: decodeURIComponent(button.dataset.source || ''),
+      published: button.dataset.published || '',
+      url: decodeURIComponent(button.dataset.url || '')
+    };
+
+    console.log("🚀 Opening explainer:", explainer);
+
+    // HARD SAFETY FALLBACK
+    if (!explainer.body || explainer.body.trim().length < 50) {
+      console.warn("⚠️ No body content — opening source");
+      window.open(explainer.url, "_blank");
+      return;
     }
+
+    const params = new URLSearchParams(explainer);
+    window.location.href = `explainer.html?${params.toString()}`;
   });
 }
 
