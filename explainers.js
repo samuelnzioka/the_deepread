@@ -109,7 +109,15 @@ async function loadExplainers(reset = false) {
 
     // Cache the data for trending
     localStorage.setItem('cached_explainers', JSON.stringify(explainers));
-    console.log('Cached explainers data to localStorage');
+    console.log('📦 Cached explainers data to localStorage');
+    console.log('📊 Cached data sample:', explainers.slice(0, 2).map(e => ({
+      id: e.id,
+      title: e.title,
+      hasBody: !!e.body,
+      hasContent: !!e.content,
+      bodyLength: e.body?.length || 0,
+      contentLength: e.content?.length || 0
+    })));
 
     page++;
     loading = false;
@@ -339,9 +347,17 @@ if (container) {
       const button = e.target;
       const id = button.dataset.id;
       
+      console.log("🔍 Read Full Analysis clicked for ID:", id);
+      
       // Find the explainer data from the cached data
       const cachedExplainers = JSON.parse(localStorage.getItem('cached_explainers') || '[]');
       const explainer = cachedExplainers.find(e => e.id === id);
+      
+      console.log("📄 Found explainer in cache:", explainer);
+      console.log("📄 Explainer has body:", !!explainer?.body);
+      console.log("📄 Explainer has content:", !!explainer?.content);
+      console.log("📄 Explainer body length:", explainer?.body?.length || 0);
+      console.log("📄 Explainer content length:", explainer?.content?.length || 0);
       
       if (explainer) {
         // Navigate to explainer.html with all data as query parameters
@@ -350,16 +366,18 @@ if (container) {
           title: explainer.title,
           image: explainer.image || '',
           summary: explainer.summary || '',
-          body: explainer.body || '',
+          body: explainer.body || explainer.content || '', // Use content as fallback
           source: explainer.source || '',
           published: explainer.published || '',
           url: explainer.url || ''
         });
         
+        console.log("🚀 Navigating to explainer.html with params:", params.toString());
         // Navigate to explainer page in same tab
         window.location.href = `explainer.html?${params.toString()}`;
       } else {
-        console.error('Explainer not found in cache');
+        console.error('❌ Explainer not found in cache for ID:', id);
+        console.log("📄 Available cached IDs:", cachedExplainers.map(e => e.id));
       }
     }
   });
