@@ -40,7 +40,13 @@ function renderExplainer() {
   const published = params.get("published");
   const url = params.get("url");
 
-  console.log("Explainer page loaded with URL data:", { id, title: title?.substring(0, 50) });
+  console.log("🔍 EXPLAINER PAGE DEBUG:");
+  console.log("Full URL:", window.location.href);
+  console.log("URL params:", Object.fromEntries(params.entries()));
+  console.log("ID:", id);
+  console.log("Title:", title);
+  console.log("Body length:", body ? body.length : 0);
+  console.log("Has body:", !!body);
 
   if (!id) {
     explainerContainer.innerHTML = `
@@ -52,8 +58,21 @@ function renderExplainer() {
     return;
   }
 
-  // Render explainer content directly from URL parameters
+  // Show what we received
   explainerContainer.innerHTML = `
+    <div class="debug-info" style="background: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 8px;">
+      <h3>DEBUG INFO:</h3>
+      <p><strong>ID:</strong> ${id}</p>
+      <p><strong>Title:</strong> ${title || 'MISSING'}</p>
+      <p><strong>Body length:</strong> ${body ? body.length : 0}</p>
+      <p><strong>Has body:</strong> ${!!body}</p>
+      <p><strong>Source:</strong> ${source || 'MISSING'}</p>
+      <details>
+        <summary>Full body content</summary>
+        <pre style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">${body || 'NO BODY CONTENT'}</pre>
+      </details>
+    </div>
+    
     <div class="explainer-content">
       ${image ? `<img src="${image}" alt="${title}" class="explainer-image">` : ''}
       <h1 class="explainer-title">${title || 'No title'}</h1>
@@ -77,6 +96,7 @@ function renderExplainer() {
       </div>
     </div>
   `;
+}
           themeBtn.innerHTML = `<i class="fas ${icon}"></i>`;
           themeBtn.setAttribute('aria-label', label);
           
