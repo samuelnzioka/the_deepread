@@ -340,34 +340,39 @@ if (refreshBtn) {
   console.error('Refresh button not found!');
 }
 
-// Handle "Read Full Analysis" button clicks - BULLETPROOF FIX
+// Handle "Read Full Analysis" button clicks - REWRITTEN FOR CONSISTENCY
 if (container) {
   container.addEventListener('click', (e) => {
-    const button = e.target.closest('.read-full-btn');
-    if (!button) return;
-
-    const explainer = {
-      id: button.dataset.id,
-      title: decodeURIComponent(button.dataset.title || ''),
-      image: button.dataset.image || '',
-      summary: decodeURIComponent(button.dataset.summary || ''),
-      body: decodeURIComponent(button.dataset.body || ''),
-      source: decodeURIComponent(button.dataset.source || ''),
-      published: button.dataset.published || '',
-      url: decodeURIComponent(button.dataset.url || '')
-    };
-
-    console.log("🚀 Opening explainer:", explainer);
-
-    // HARD SAFETY FALLBACK
-    if (!explainer.body || explainer.body.trim().length < 50) {
-      console.warn("⚠️ No body content — opening source");
-      window.open(explainer.url, "_blank");
-      return;
+    if (e.target.classList.contains('read-full-btn')) {
+      const button = e.target;
+      
+      // Get all data from button attributes
+      const id = button.dataset.id;
+      const title = button.dataset.title ? decodeURIComponent(button.dataset.title) : '';
+      const image = button.dataset.image || '';
+      const summary = button.dataset.summary ? decodeURIComponent(button.dataset.summary) : '';
+      const body = button.dataset.body ? decodeURIComponent(button.dataset.body) : '';
+      const source = button.dataset.source ? decodeURIComponent(button.dataset.source) : '';
+      const published = button.dataset.published || '';
+      const url = button.dataset.url ? decodeURIComponent(button.dataset.url) : '';
+      
+      console.log("🚀 Read Full Analysis clicked:", { id, title: title.substring(0, 50) });
+      
+      // Create URL parameters
+      const params = new URLSearchParams({
+        id: id,
+        title: title,
+        image: image,
+        summary: summary,
+        body: body,
+        source: source,
+        published: published,
+        url: url
+      });
+      
+      // Navigate to explainer page
+      window.location.href = `explainer.html?${params.toString()}`;
     }
-
-    const params = new URLSearchParams(explainer);
-    window.location.href = `explainer.html?${params.toString()}`;
   });
 }
 
