@@ -340,7 +340,7 @@ if (refreshBtn) {
   console.error('Refresh button not found!');
 }
 
-// Handle "Read Full Analysis" button clicks - REWRITTEN FOR CONSISTENCY
+// Handle "Read Full Analysis" button clicks - SMART CONTENT HANDLING
 if (container) {
   container.addEventListener('click', (e) => {
     if (e.target.classList.contains('read-full-btn')) {
@@ -356,22 +356,32 @@ if (container) {
       const published = button.dataset.published || '';
       const url = button.dataset.url ? decodeURIComponent(button.dataset.url) : '';
       
-      console.log("🚀 Read Full Analysis clicked:", { id, title: title.substring(0, 50) });
+      console.log("🚀 Read Full Analysis clicked:", { id, title: title.substring(0, 50), hasBody: !!body, bodyLength: body.length });
       
-      // Create URL parameters
-      const params = new URLSearchParams({
-        id: id,
-        title: title,
-        image: image,
-        summary: summary,
-        body: body,
-        source: source,
-        published: published,
-        url: url
-      });
-      
-      // Navigate to explainer page
-      window.location.href = `explainer.html?${params.toString()}`;
+      // Check if we have actual content to show
+      if (body && body.trim().length > 50) {
+        // Has content - go to explainer page
+        const params = new URLSearchParams({
+          id: id,
+          title: title,
+          image: image,
+          summary: summary,
+          body: body,
+          source: source,
+          published: published,
+          url: url
+        });
+        
+        window.location.href = `explainer.html?${params.toString()}`;
+      } else if (url && url.trim().length > 0) {
+        // No body content but has URL - open original source
+        console.log("📄 No body content, opening original source:", url);
+        window.open(url, '_blank');
+      } else {
+        // No content and no URL - show error
+        console.log("❌ No content available for this explainer");
+        alert("This explainer doesn't have full analysis content available. Please try another article.");
+      }
     }
   });
 }

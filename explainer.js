@@ -29,7 +29,20 @@ function renderExplainer() {
     return;
   }
 
-  if (!id && !slug) {
+  // Get all data from URL parameters
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  const title = params.get("title");
+  const image = params.get("image");
+  const summary = params.get("summary");
+  const body = params.get("body");
+  const source = params.get("source");
+  const published = params.get("published");
+  const url = params.get("url");
+
+  console.log("Explainer page loaded with URL data:", { id, title: title?.substring(0, 50) });
+
+  if (!id) {
     explainerContainer.innerHTML = `
       <div class="error-message">
         <h2>No explainer data found</h2>
@@ -39,84 +52,31 @@ function renderExplainer() {
     return;
   }
 
-  // Show loading state
+  // Render explainer content directly from URL parameters
   explainerContainer.innerHTML = `
-    <div class="loading-state">
-      <i class="fas fa-spinner fa-spin"></i>
-      <p>Loading explainer...</p>
+    <div class="explainer-content">
+      ${image ? `<img src="${image}" alt="${title}" class="explainer-image">` : ''}
+      <h1 class="explainer-title">${title || 'No title'}</h1>
+      
+      <div class="explainer-meta">
+        <span class="source">${source || 'Unknown'}</span>
+        <span class="published">${published ? new Date(published).toLocaleDateString() : 'Unknown date'}</span>
+        ${url ? `<a href="${url}" target="_blank" class="original-link">View Original →</a>` : ''}
+      </div>
+      
+      <div class="explainer-summary">
+        <h2>Summary</h2>
+        <p>${summary || 'No summary available'}</p>
+      </div>
+      
+      <div class="explainer-body">
+        <h2>Full Analysis</h2>
+        <div class="explainer-content-text">
+          ${body || 'No full analysis content available'}
+        </div>
+      </div>
     </div>
   `;
-
-  // Fetch full explainer data using ID or slug - fetch from list and find by ID or slug
-  fetch('https://the-terrific-proxy.onrender.com/api/explainers?page=1')
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      return res.json();
-    })
-    .then(data => {
-      console.log("Explainer API response:", data);
-      
-      // Find the explainer in the results array
-      const explainers = data.results || data.explainers || [];
-      let explainer;
-      
-      if (id) {
-        // Find by ID (old URL format)
-        explainer = explainers.find(e => e.id === id);
-        console.log("Looking for explainer by ID:", id);
-      } else if (slug) {
-        // Find by slug (new clean URL format)
-        explainer = explainers.find(e => {
-          const explainerSlug = e.slug || createSlugFromTitle(e.title);
-          return explainerSlug === slug;
-        });
-        console.log("Looking for explainer by slug:", slug);
-      }
-      
-      if (!explainer) {
-        throw new Error(`Explainer not found (ID: ${id}, Slug: ${slug})`);
-      }
-      
-      console.log("Found explainer:", explainer);
-      
-      // Render explainer content
-      explainerContainer.innerHTML = `
-        <div class="explainer-content">
-          ${explainer.image ? `<img src="${explainer.image}" alt="${explainer.title}" class="explainer-image">` : ''}
-          <h1 class="explainer-title">${explainer.title}</h1>
-          
-          <div class="explainer-meta">
-            <span class="source">${explainer.source || 'Unknown'}</span>
-            <span class="published">${explainer.date ? new Date(explainer.date).toLocaleDateString() : 'Unknown date'}</span>
-            ${explainer.url ? `<a href="${explainer.url}" target="_blank" class="original-link">View Original →</a>` : ''}
-          </div>
-          
-          <div class="explainer-summary">
-            <h2>Summary</h2>
-            <p>${explainer.summary || 'No summary available'}</p>
-          </div>
-          
-          <div class="explainer-body">
-            <h2>Full Analysis</h2>
-            ${explainer.body || explainer.background || 'No full analysis available'}
-          </div>
-        </div>
-      `;
-      
-      // Apply theme after content loads
-      setTimeout(() => {
-        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const stored = localStorage.getItem('theme');
-        const isDark = stored ? stored === 'dark' : prefersDark;
-        document.body.classList.toggle('dark', isDark);
-        
-        // Update theme toggle button
-        const themeBtn = document.querySelector('#themeToggleBtn, .theme-toggle-top');
-        if (themeBtn) {
-          const icon = isDark ? 'fa-sun' : 'fa-moon';
-          const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
           themeBtn.innerHTML = `<i class="fas ${icon}"></i>`;
           themeBtn.setAttribute('aria-label', label);
           
