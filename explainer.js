@@ -58,21 +58,8 @@ function renderExplainer() {
     return;
   }
 
-  // Show what we received
+  // Render explainer content directly from URL parameters
   explainerContainer.innerHTML = `
-    <div class="debug-info" style="background: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 8px;">
-      <h3>DEBUG INFO:</h3>
-      <p><strong>ID:</strong> ${id}</p>
-      <p><strong>Title:</strong> ${title || 'MISSING'}</p>
-      <p><strong>Body length:</strong> ${body ? body.length : 0}</p>
-      <p><strong>Has body:</strong> ${!!body}</p>
-      <p><strong>Source:</strong> ${source || 'MISSING'}</p>
-      <details>
-        <summary>Full body content</summary>
-        <pre style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">${body || 'NO BODY CONTENT'}</pre>
-      </details>
-    </div>
-    
     <div class="explainer-content">
       ${image ? `<img src="${image}" alt="${title}" class="explainer-image">` : ''}
       <h1 class="explainer-title">${title || 'No title'}</h1>
@@ -97,88 +84,16 @@ function renderExplainer() {
     </div>
   `;
 }
-          themeBtn.innerHTML = `<i class="fas ${icon}"></i>`;
-          themeBtn.setAttribute('aria-label', label);
-          
-          themeBtn.onclick = () => {
-            const newDark = !document.body.classList.contains('dark');
-            document.body.classList.toggle('dark', newDark);
-            localStorage.setItem('theme', newDark ? 'dark' : 'light');
-            
-            const newIcon = newDark ? 'fa-sun' : 'fa-moon';
-            const newLabel = newDark ? 'Switch to light mode' : 'Switch to dark mode';
-            themeBtn.innerHTML = `<i class="fas ${newIcon}"></i>`;
-            themeBtn.setAttribute('aria-label', newLabel);
-          };
-        }
-      }, 100);
-    })
-    .catch(err => {
-      console.error('Error fetching explainer:', err);
-      explainerContainer.innerHTML = `
-        <div class="error-message">
-          <h2>Error loading explainer</h2>
-          <p>Could not load the explainer. Please try again.</p>
-        </div>
-      `;
-    });
-}
 
 // Render when page loads
 document.addEventListener('DOMContentLoaded', () => {
   renderExplainer();
   
-  // Ensure theme is properly applied after rendering
-  setTimeout(() => {
-    // Direct theme re-initialization
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const stored = localStorage.getItem('theme');
-    const isDark = stored ? stored === 'dark' : prefersDark;
-    
-    // Apply theme to body
-    document.body.classList.toggle('dark', isDark);
-    
-    // Update theme toggle button
-    const themeBtn = document.querySelector('#themeToggleBtn, .theme-toggle-top');
-    if (themeBtn) {
-      const icon = isDark ? 'fa-sun' : 'fa-moon';
-      const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-      themeBtn.innerHTML = `<i class="fas ${icon}"></i>`;
-      themeBtn.setAttribute('aria-label', label);
-      
-      // Ensure click handler works
-      themeBtn.onclick = () => {
-        const newDark = !document.body.classList.contains('dark');
-        document.body.classList.toggle('dark', newDark);
-        localStorage.setItem('theme', newDark ? 'dark' : 'light');
-        
-        const newIcon = newDark ? 'fa-sun' : 'fa-moon';
-        const newLabel = newDark ? 'Switch to light mode' : 'Switch to dark mode';
-        themeBtn.innerHTML = `<i class="fas ${newIcon}"></i>`;
-        themeBtn.setAttribute('aria-label', newLabel);
-      };
-    }
-  }, 100);
-  
   // Add go back functionality
   const goBackBtn = document.getElementById("goBackBtn");
   if (goBackBtn) {
     goBackBtn.addEventListener('click', () => {
-      // Use browser back button to preserve scroll position
       window.history.back();
     });
-  }
-  
-  // Also handle browser back button
-  window.addEventListener('popstate', (event) => {
-    // If user clicks back button, go to explainers
-    if (window.location.pathname.includes('explainer.html')) {
-      window.location.href = 'explainers.html';
-    }
-  });
-  
-  // Push state to enable back button functionality
-  if (window.location.pathname.includes('explainer.html')) {
-    history.pushState({ page: 'explainer' }, '', window.location.href);
   }
 });
