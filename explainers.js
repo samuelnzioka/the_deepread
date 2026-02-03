@@ -126,28 +126,143 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show loading state
     container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading full analysis...</div>';
     
-    // Fetch full explainer using ID (more reliable than slug)
-    fetch(`https://the-terrific-proxy.onrender.com/api/explainers/article?id=${encodeURIComponent(id)}`)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.json();
-      })
-      .then(explainer => {
-        console.log("📄 Full explainer data received:", explainer);
-        renderFullAnalysis(explainer);
-      })
-      .catch(err => {
-        console.error('❌ Error loading full analysis:', err);
+    console.log("🔍 Starting fetch for explainer ID:", id);
+    console.log("🔍 Full fetch URL:", `https://the-terrific-proxy.onrender.com/api/explainers/article?id=${encodeURIComponent(id)}`);
+    
+    // Try multiple possible endpoints to ensure we get the data
+    const possibleEndpoints = [
+      `https://the-terrific-proxy.onrender.com/api/explainers/article?id=${encodeURIComponent(id)}`,
+      `https://the-terrific-proxy.onrender.com/api/explainers?id=${encodeURIComponent(id)}`,
+      `https://the-terrific-proxy.onrender.com/api/explainers/${encodeURIComponent(id)}`
+    ];
+    
+    let endpointIndex = 0;
+    
+    function tryNextEndpoint() {
+      if (endpointIndex >= possibleEndpoints.length) {
+        console.error('❌ All endpoints failed for ID:', id);
         container.innerHTML = `
           <div class="error-message">
-            <h2>Failed to Load Analysis</h2>
-            <p>Unable to load the full analysis. Please try again later.</p>
-            <button class="bubble-btn" onclick="location.reload()">
-              <i class="fas fa-redo"></i> Try Again
-            </button>
+            <h2>Unable to Load Analysis</h2>
+            <p>Could not fetch the explainer content. The article may not be available.</p>
+            <div style="margin-top: 20px;">
+              <button class="bubble-btn" onclick="location.reload()">
+                <i class="fas fa-redo"></i> Try Again
+              </button>
+              <button class="bubble-btn" onclick="history.back()" style="margin-left: 10px;">
+                <i class="fas fa-arrow-left"></i> Go Back
+              </button>
+            </div>
           </div>
         `;
+        return;
+      }
+      
+      const currentEndpoint = possibleEndpoints[endpointIndex];
+      console.log(`🔍 Trying endpoint ${endpointIndex + 1}/${possibleEndpoints.length}:`, currentEndpoint);
+      
+      fetch(currentEndpoint, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => {
+        console.log(`📡 Response status for endpoint ${endpointIndex + 1}:`, response.status);
+        console.log(`📡 Response headers:`, Object.fromEntries(response.headers.entries()));
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.text().then(text => {
+          console.log(`📡 Raw response text length:`, text.length);
+          console.log(`📡 Raw response preview:`, text.substring(0, 200));
+          
+          try {
+            return JSON.parse(text);
+          } catch (parseError) {
+            console.error('❌ JSON parse error:', parseError);
+            throw new Error('Invalid JSON response from server');
+          }
+        });
+      })
+      .then(data => {
+        console.log(`📄 Full data received from endpoint ${endpointIndex + 1}:`, data);
+        console.log(`📄 Data type:`, typeof data);
+        console.log(`📄 Data keys:`, Object.keys(data));
+        
+        // Validate the received data
+        if (!data || typeof data !== 'object') {
+          throw new Error('Invalid data format received');
+        }
+        
+        // Check for explainer data in different possible structures
+        let explainer = null;
+        
+        if (data.id && data.title) {
+          explainer = data; // Direct explainer object
+        } else if (data.explainer && data.explainer.id && data.explainer.title) {
+          explainer = data.explainer; // Nested explainer object
+        } else if (data.data && data.data.id && data.data.title) {
+          explainer = data.data; // Data field
+        } else if (data.article && data.article.id && data.article.title) {
+          explainer = data.article; // Article field
+        } else {
+          console.error('❌ No valid explainer structure found in:', data);
+          throw new Error('Explainer data not found in response');
+        }
+        
+        console.log('✅ Valid explainer data found:', {
+          id: explainer.id,
+          title: explainer.title,
+          hasBody: !!explainer.body,
+          bodyLength: explainer.body ? explainer.body.length : 0,
+          hasContent: !!explainer.content,
+          contentLength: explainer.content ? explainer.content.length : 0
+        });
+        
+        // Ensure we have content to display
+        if (!explainer.body && !explainer.content) {
+          console.warn('⚠️ No body/content found, checking other fields...');
+          explainer.body = explainer.text || explainer.description || explainer.full_content || '';
+        }
+        
+        renderFullAnalysis(explainer);
+      })
+      .catch(error => {
+        console.error(`❌ Endpoint ${endpointIndex + 1} failed:`, error);
+        console.error(`❌ Error details:`, error.message);
+        
+        endpointIndex++;
+        
+        if (endpointIndex < possibleEndpoints.length) {
+          console.log(`🔄 Trying next endpoint...`);
+          tryNextEndpoint();
+        } else {
+          console.error('❌ All endpoints exhausted');
+          container.innerHTML = `
+            <div class="error-message">
+              <h2>Failed to Load Analysis</h2>
+              <p><strong>Error:</strong> ${error.message}</p>
+              <p>Unable to load the explainer content. Please try again later.</p>
+              <div style="margin-top: 20px;">
+                <button class="bubble-btn" onclick="location.reload()">
+                  <i class="fas fa-redo"></i> Try Again
+                </button>
+                <button class="bubble-btn" onclick="history.back()" style="margin-left: 10px;">
+                  <i class="fas fa-arrow-left"></i> Go Back
+                </button>
+              </div>
+            </div>
+          `;
+        }
       });
+    }
+    
+    // Start trying endpoints
+    tryNextEndpoint();
   }
 
   function renderFullAnalysis(explainer) {
@@ -177,7 +292,36 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <div class="explainer-body">
           <h2>Full Analysis</h2>
-          ${explainer.body || explainer.content || 'No full analysis available'}
+          <div class="explainer-content-text">
+            ${(() => {
+              // Try multiple possible content fields
+              const content = explainer.body || explainer.content || explainer.text || explainer.description || explainer.full_content || '';
+              
+              console.log('🔍 Content analysis:', {
+                hasBody: !!explainer.body,
+                bodyLength: explainer.body ? explainer.body.length : 0,
+                hasContent: !!explainer.content,
+                contentLength: explainer.content ? explainer.content.length : 0,
+                hasText: !!explainer.text,
+                textLength: explainer.text ? explainer.text.length : 0,
+                finalContent: content.substring(0, 100) + '...'
+              });
+              
+              if (!content || content.trim().length === 0) {
+                return '<p><em>No full analysis content available for this explainer.</em></p>';
+              }
+              
+              // Check if content looks like HTML and render accordingly
+              if (content.includes('<p>') || content.includes('<div>') || content.includes('<h1>') || content.includes('<h2>')) {
+                return content; // Render as HTML
+              } else {
+                // Convert plain text to HTML with proper formatting
+                return content.split('\n\n').map(paragraph => 
+                  paragraph.trim() ? `<p>${paragraph.trim()}</p>` : ''
+                ).join('');
+              }
+            })()}
+          </div>
         </div>
       </div>
     `;
