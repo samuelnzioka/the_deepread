@@ -89,6 +89,18 @@ async function loadExplainers(reset = false) {
         card.classList.add("new-content");
       }
 
+      // DEBUG: Log the data for each item BEFORE creating button
+      console.log(`🔍 EXPLAINER ITEM ${index}:`, {
+        id: item.id,
+        title: item.title,
+        hasBody: !!item.body,
+        bodyLength: item.body ? item.body.length : 0,
+        hasContent: !!item.content,
+        contentLength: item.content ? item.content.length : 0,
+        source: item.source,
+        summary: item.summary ? item.summary.substring(0, 50) + '...' : 'NO SUMMARY'
+      });
+
       card.innerHTML = `
         ${item.image ? `<img src="${item.image}" alt="${item.title}">` : ""}
         <div class="explainer-body">
@@ -98,7 +110,7 @@ async function loadExplainers(reset = false) {
             <span class="source">${item.source}</span>
             <span class="date">${new Date(item.published).toLocaleDateString()}</span>
           </div>
-          <button class="read-full-btn" data-id="${item.id}" data-title="${encodeURIComponent(item.title)}" data-image="${item.image || ''}" data-summary="${encodeURIComponent(item.summary || '')}" data-body="${encodeURIComponent(item.body || '')}" data-source="${encodeURIComponent(item.source)}" data-published="${item.published}" data-url="${encodeURIComponent(item.url || '')}">
+          <button class="read-full-btn" data-id="${item.id}" data-title="${encodeURIComponent(item.title || '')}" data-image="${item.image || ''}" data-summary="${encodeURIComponent(item.summary || '')}" data-body="${encodeURIComponent(item.body || '')}" data-source="${encodeURIComponent(item.source || '')}" data-published="${item.published || ''}" data-url="${encodeURIComponent(item.url || '')}">
             Read Full Analysis →
           </button>
         </div>
@@ -340,48 +352,55 @@ if (refreshBtn) {
   console.error('Refresh button not found!');
 }
 
-// Handle "Read Full Analysis" button clicks - SMART CONTENT HANDLING
+// Handle "Read Full Analysis" button clicks - FETCH FULL CONTENT LIKE WARS
 if (container) {
   container.addEventListener('click', (e) => {
     if (e.target.classList.contains('read-full-btn')) {
       const button = e.target;
       
-      // Get all data from button attributes
+      // Get ID from button
       const id = button.dataset.id;
-      const title = button.dataset.title ? decodeURIComponent(button.dataset.title) : '';
-      const image = button.dataset.image || '';
-      const summary = button.dataset.summary ? decodeURIComponent(button.dataset.summary) : '';
-      const body = button.dataset.body ? decodeURIComponent(button.dataset.body) : '';
-      const source = button.dataset.source ? decodeURIComponent(button.dataset.source) : '';
-      const published = button.dataset.published || '';
-      const url = button.dataset.url ? decodeURIComponent(button.dataset.url) : '';
       
-      console.log("🚀 Read Full Analysis clicked:", { id, title: title.substring(0, 50), hasBody: !!body, bodyLength: body.length });
+      console.log("🚀 Read Full Analysis clicked for ID:", id);
       
-      // Check if we have actual content to show
-      if (body && body.trim().length > 50) {
-        // Has content - go to explainer page
-        const params = new URLSearchParams({
-          id: id,
-          title: title,
-          image: image,
-          summary: summary,
-          body: body,
-          source: source,
-          published: published,
-          url: url
+      // Show loading state
+      container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading full analysis...</div>';
+      
+      // Fetch full explainer content using ID (like wars does)
+      fetch(`https://the-terrific-proxy.onrender.com/api/explainers/article?id=${encodeURIComponent(id)}`)
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.json();
+        })
+        .then(explainer => {
+          console.log("📄 Full explainer data received:", explainer);
+          
+          // Navigate to explainer page with full data
+          const params = new URLSearchParams({
+            id: explainer.id,
+            title: explainer.title || '',
+            image: explainer.image || '',
+            summary: explainer.summary || '',
+            body: explainer.body || explainer.content || '', // Try both fields
+            source: explainer.source || '',
+            published: explainer.published || explainer.date || '',
+            url: explainer.url || ''
+          });
+          
+          window.location.href = `explainer.html?${params.toString()}`;
+        })
+        .catch(err => {
+          console.error('❌ Error loading full explainer:', err);
+          container.innerHTML = `
+            <div class="error-message">
+              <h2>Failed to Load Analysis</h2>
+              <p>Unable to load the full analysis. Please try again later.</p>
+              <button class="bubble-btn" onclick="location.reload()">
+                <i class="fas fa-redo"></i> Try Again
+              </button>
+            </div>
+          `;
         });
-        
-        window.location.href = `explainer.html?${params.toString()}`;
-      } else if (url && url.trim().length > 0) {
-        // No body content but has URL - open original source
-        console.log("📄 No body content, opening original source:", url);
-        window.open(url, '_blank');
-      } else {
-        // No content and no URL - show error
-        console.log("❌ No content available for this explainer");
-        alert("This explainer doesn't have full analysis content available. Please try another article.");
-      }
     }
   });
 }
