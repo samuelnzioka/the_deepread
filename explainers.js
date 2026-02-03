@@ -1,436 +1,228 @@
-console.log("Explainers JS loaded");
+console.log("🔍 Explainers page loaded");
 
-const container = document.getElementById("explainers-feed");
-const refreshBtn = document.getElementById("refreshBtn");
-const loadingDiv = document.getElementById("loading");
-const refreshStatus = document.getElementById("refreshStatus");
+// Wait for DOM to be ready before accessing elements
+document.addEventListener('DOMContentLoaded', function() {
+  // 🛠️ SIMPLIFIED LOGIC: Always load explainers list
+  console.log("📋 Loading explainers list");
+  
+  const container = document.getElementById("explainers-feed");
+  const loadMoreBtn = document.getElementById("loadMoreBtn");
 
-console.log("DOM elements found:", {
-  container: !!container,
-  refreshBtn: !!refreshBtn,
-  loadingDiv: !!loadingDiv,
-  refreshStatus: !!refreshStatus
-});
+  console.log("🎯 Container element:", container);
+  console.log("🎯 Load More button:", loadMoreBtn);
 
-let page = 1;
-let loading = false;
-let explainers = [];
+  // Pagination variables
+  let currentPage = 1;
+  let isLoading = false;
+  let hasMoreContent = true;
 
-async function loadExplainers(reset = false) {
-  if (loading) return;
-  loading = true;
-  loadingDiv.style.display = "block";
-
-  if (reset) {
-    page = 1;
-    container.innerHTML = "";
-    // Clear cache on reset
-    localStorage.removeItem('cached_explainers');
+  // 🛠️ IMPLEMENT loadExplainersList() (CARDS) with pagination
+  function loadExplainersList(append = false) {
+    if (isLoading || !hasMoreContent) return;
+    
+    console.log("📋 Loading explainers list - Page:", currentPage);
+    isLoading = true;
+    
+    // Show loading indicator
+    if (loadMoreBtn) {
+      loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+      loadMoreBtn.disabled = true;
+    }
+    
+    fetch(`https://the-terrific-proxy.onrender.com/api/explainers?page=${currentPage}`)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        console.log("📄 Explainers data received:", data);
+        const explainers = data.explainers || data.results || data.articles || [];
+        
+        if (explainers.length === 0) {
+          hasMoreContent = false;
+          if (loadMoreBtn) {
+            loadMoreBtn.style.display = 'none';
+          }
+          if (!append) {
+            container.innerHTML = '<p>No explainers articles available at the moment.</p>';
+          }
+          return;
+        }
+        
+        renderExplainerCards(explainers, append);
+        currentPage++;
+        
+        // Reset load more button
+        if (loadMoreBtn) {
+          loadMoreBtn.innerHTML = 'Load More Explainers';
+          loadMoreBtn.disabled = false;
+          loadMoreBtn.style.display = 'block';
+        }
+      })
+      .catch(err => {
+        console.error('❌ Error loading explainers list:', err);
+        if (container && !append) {
+          container.innerHTML = "<p>Error loading explainers.</p>";
+        }
+        if (loadMoreBtn) {
+          loadMoreBtn.innerHTML = 'Load More Explainers';
+          loadMoreBtn.disabled = false;
+        }
+      })
+      .finally(() => {
+        isLoading = false;
+      });
   }
 
-  console.log(`Loading explainers page ${page}, reset: ${reset}`);
-
-  // Simple direct API call
-  const url = `https://the-terrific-proxy.onrender.com/api/explainers?page=${page}`;
-  console.log(`🔥 Loading explainers from: ${url}`);
-
-  try {
-    const res = await fetch(url);
-    console.log('Response status:', res.status);
+  function renderExplainerCards(explainers, append = false) {
+    if (!container) return;
     
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-
-    const data = await res.json();
-    console.log('RAW API RESPONSE:', data);
-    console.log('Data type:', typeof data);
-    console.log('Data keys:', Object.keys(data));
+    console.log(`📰 Rendering ${explainers.length} explainer cards (append: ${append})`);
     
-    // Handle different possible response structures
-    let fetchedExplainers = null;
-    
-    if (data.explainers && Array.isArray(data.explainers)) {
-      fetchedExplainers = data.explainers;
-      console.log('Using data.explainers structure');
-    } else if (data.response && data.response.results && Array.isArray(data.response.results)) {
-      fetchedExplainers = data.response.results;
-      console.log('Using data.response.results structure');
-    } else if (data.results && Array.isArray(data.results)) {
-      fetchedExplainers = data.results;
-      console.log('Using data.results structure');
-    } else if (Array.isArray(data)) {
-      fetchedExplainers = data;
-      console.log('Using direct array structure');
-    } else {
-      console.log('No valid explainers array found in response');
-      console.log('Available properties:', Object.keys(data));
+    // Clear existing content only if not appending
+    if (!append) {
+      container.innerHTML = '';
     }
     
-    console.log('Explainers array:', fetchedExplainers);
-    console.log('Explainers type:', typeof fetchedExplainers);
-    console.log('Explainers length:', fetchedExplainers ? fetchedExplainers.length : 'N/A');
-    
-    if (!fetchedExplainers || fetchedExplainers.length === 0) {
-      console.log('No explainers found');
-      loadingDiv.style.display = "none";
-      container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-muted);">No explainers found. The data source may be outdated.</p>';
-      return;
-    }
-    
-    // Process explainers
-    console.log(`Processing ${fetchedExplainers.length} explainers`);
-
-    fetchedExplainers.forEach((item, index) => {
-      const card = document.createElement("div");
-      card.className = "explainer-card";
+    explainers.forEach(explainer => {
+      const explainerCard = document.createElement('div');
+      explainerCard.className = 'explainer-card';
       
-      if (reset && index === 0) {
-        card.classList.add("new-content");
-      }
-
-      // DEBUG: Log the data for each item BEFORE creating button
-      console.log(`🔍 EXPLAINER ITEM ${index}:`, {
-        id: item.id,
-        title: item.title,
-        hasBody: !!item.body,
-        bodyLength: item.body ? item.body.length : 0,
-        hasContent: !!item.content,
-        contentLength: item.content ? item.content.length : 0,
-        source: item.source,
-        summary: item.summary ? item.summary.substring(0, 50) + '...' : 'NO SUMMARY'
-      });
-
-      card.innerHTML = `
-        ${item.image ? `<img src="${item.image}" alt="${item.title}">` : ""}
-        <div class="explainer-body">
-          <h3>${item.title}</h3>
-          <p>${item.summary ? item.summary.substring(0, 200) + '...' : 'No summary available'}</p>
-          <div class="explainer-meta">
-            <span class="source">${item.source}</span>
-            <span class="date">${new Date(item.published).toLocaleDateString()}</span>
-          </div>
-          <button class="read-full-btn" data-id="${item.id}" data-title="${encodeURIComponent(item.title || '')}" data-image="${item.image || ''}" data-summary="${encodeURIComponent(item.summary || '')}" data-body="${encodeURIComponent(item.body || '')}" data-source="${encodeURIComponent(item.source || '')}" data-published="${item.published || ''}" data-url="${encodeURIComponent(item.url || '')}">
-            Read Full Analysis →
+      // Create slug from title if not available
+      const explainerSlug = explainer.slug || createSlugFromTitle(explainer.title);
+      
+      explainerCard.innerHTML = `
+        ${explainer.image ? `<img src="${explainer.image}" alt="${explainer.title}" />` : ''}
+        <div class="explainer-content">
+          <h3>${explainer.title}</h3>
+          <p>${explainer.summary}</p>
+          <button class="bubble-btn read-full" data-slug="${explainerSlug}" data-id="${explainer.id}">
+            Read full analysis →
           </button>
         </div>
       `;
-
-      container.appendChild(card);
+      
+      // Add click handler for the button
+      const readFullBtn = explainerCard.querySelector('.read-full');
+      readFullBtn.addEventListener('click', function() {
+        const slug = this.getAttribute('data-slug');
+        const id = this.getAttribute('data-id');
+        loadFullAnalysis(slug, id);
+      });
+      
+      container.appendChild(explainerCard);
     });
-
-    // Cache the data for trending
-    localStorage.setItem('cached_explainers', JSON.stringify(fetchedExplainers));
-    console.log('📦 Cached explainers data to localStorage');
-    console.log('📊 Cached data sample:', fetchedExplainers.slice(0, 2).map(e => ({
-      id: e.id,
-      title: e.title,
-      hasBody: !!e.body,
-      hasContent: !!e.content,
-      bodyLength: e.body?.length || 0,
-      contentLength: e.content?.length || 0
-    })));
-
-    page++;
-    loading = false;
-    loadingDiv.style.display = "none";
-    
-  } catch (error) {
-    console.error('Error loading explainers:', error);
-    loadingDiv.style.display = "none";
-    container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-muted);">Failed to load explainers. Please try again.</p>';
-    loading = false;
   }
-}
 
-// Refresh button functionality - fetch and show new content
-if (refreshBtn) {
-  refreshBtn.addEventListener('click', async () => {
-    if (loading) return;
+  // 🛠️ LOAD FULL ANALYSIS FUNCTION (LIKE WARS)
+  function loadFullAnalysis(slug, id) {
+    console.log("📄 Loading full analysis for slug:", slug, "ID:", id);
     
-    console.log('🔄 REFRESH: Forcing fresh explainers with critical fixes');
-    
-    // Show updating status
-    if (refreshStatus) {
-      refreshStatus.textContent = 'Force updating...';
-      refreshStatus.className = 'refresh-status updating';
+    // Hide load more button for individual article view
+    if (loadMoreBtn) {
+      loadMoreBtn.style.display = 'none';
     }
     
-    try {
-      loading = true;
-      loadingDiv.style.display = "block";
-      
-      // CRITICAL FIX 1: Force recent articles (last 7 days only)
-      const fromDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0];
-      
-      // CRITICAL FIX 2: Randomize queries to prevent stale content
-      const queries = [
-        "global economy analysis",
-        "geopolitical tensions explained", 
-        "war impact global markets",
-        "china us trade analysis",
-        "middle east conflict explained",
-        "ukraine russia economic impact",
-        "inflation global markets analysis",
-        "energy crisis geopolitics",
-        "supply chain disruptions explained",
-        "central bank policies analysis",
-        "global inflation trends",
-        "federal reserve analysis",
-        "european union economy",
-        "asia pacific markets",
-        "commodity prices analysis",
-        "cryptocurrency regulation"
-      ];
-      const randomQuery = queries[Math.floor(Math.random() * queries.length)];
-      
-      // Use the same multi-URL approach with critical fixes
-      const timestamp = Date.now();
-      const random = Math.random().toString(36).substring(7);
-      
-      const urls = [
-        `https://the-terrific-proxy.onrender.com/api/explainers?page=1&t=${timestamp}&r=${random}&nocache=true&force=true&from-date=${fromDate}&order-by=newest&q=${encodeURIComponent(randomQuery)}`,
-        `https://the-terrific-proxy.onrender.com/api/explainers?page=1&t=${timestamp}&r=${random}&nocache=true&force=true&from=${fromDate}&sort=newest&query=${encodeURIComponent(randomQuery)}`,
-        `https://the-terrific-proxy.onrender.com/api/explainers?page=1&t=${timestamp}&r=${random}&nocache=true&force=true&date-from=${fromDate}&order=newest&search=${encodeURIComponent(randomQuery)}`,
-        `https://the-terrific-proxy.onrender.com/api/explainers?page=1&t=${timestamp}&r=${random}&nocache=true&force=true&recent=true&latest=true`
-      ];
-      
-      console.log(`🔥 REFRESH CRITICAL: Using date filter from: ${fromDate}`);
-      console.log(`🎲 REFRESH CRITICAL: Random query: "${randomQuery}"`);
-      
-      let urlIndex = 0;
-      let freshExplainers = null;
-      
-      async function tryNextRefreshUrl() {
-        if (urlIndex >= urls.length) {
-          console.log('All refresh URLs failed');
-          throw new Error('Unable to fetch fresh explainers');
-        }
-        
-        console.log(`Trying refresh URL ${urlIndex + 1}:`, urls[urlIndex]);
-        
-        try {
-          const response = await fetch(urls[urlIndex]);
-          const data = await response.json();
-          
-          console.log('Fresh data for refresh:', data);
-          
-          // Handle different response structures
-          let explainers = null;
-          
-          if (data.results && Array.isArray(data.results)) {
-            explainers = data.results;
-          } else if (data.explainers && Array.isArray(data.explainers)) {
-            explainers = data.explainers;
-          } else if (data.response && data.response.results && Array.isArray(data.response.results)) {
-            explainers = data.response.results;
-          } else if (Array.isArray(data)) {
-            explainers = data;
-          }
-          
-          if (!explainers || explainers.length === 0) {
-            throw new Error('No explainers found');
-          }
-          
-          // CRITICAL: Check for content from last 7 days only
-          const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-          const recentCount = explainers.filter(item => {
-            const itemDate = new Date(item.published || item.date || item.created);
-            const isRecent = itemDate >= sevenDaysAgo;
-            console.log(`📅 REFRESH Item "${item.title?.substring(0, 50)}..." - Date: ${itemDate.toISOString().split('T')[0]} - Recent: ${isRecent}`);
-            return isRecent;
-          }).length;
-          
-          console.log(`🔍 REFRESH CRITICAL: Found ${explainers.length} total, ${recentCount} from last 7 days`);
-          
-          if (recentCount === 0 && urlIndex < urls.length - 1) {
-            console.log('❌ REFRESH: No content from last 7 days, trying next URL');
-            urlIndex++;
-            return tryNextRefreshUrl();
-          }
-          
-          freshExplainers = explainers;
-          return freshExplainers;
-          
-        } catch (error) {
-          console.error(`Refresh URL ${urlIndex + 1} failed:`, error);
-          urlIndex++;
-          return tryNextRefreshUrl();
-        }
-      }
-      
-      freshExplainers = await tryNextRefreshUrl();
-      
-      if (freshExplainers && freshExplainers.length > 0) {
-        // Clear existing content and show fresh data
-        container.innerHTML = '';
-        page = 1;
-        
-        // Render fresh explainers
-        freshExplainers.forEach((item, index) => {
-          const card = document.createElement("div");
-          card.className = "explainer-card";
-          
-          // Add new-content animation to first few cards
-          if (index < 3) {
-            card.classList.add("new-content");
-          }
-
-          card.innerHTML = `
-            ${item.image ? `<img src="${item.image}" alt="${item.title}">` : ""}
-            <div class="explainer-body">
-              <h3>${item.title}</h3>
-              <p>${item.summary ? item.summary.substring(0, 200) + '...' : 'No summary available'}</p>
-              <div class="explainer-meta">
-                <span class="source">${item.source}</span>
-                <span class="date">${new Date(item.published).toLocaleDateString()}</span>
-              </div>
-              <button class="read-full-btn" data-id="${item.id}" data-title="${encodeURIComponent(item.title)}" data-image="${item.image || ''}" data-summary="${encodeURIComponent(item.summary || '')}" data-body="${encodeURIComponent(item.body || '')}" data-source="${encodeURIComponent(item.source)}" data-published="${item.published}" data-url="${encodeURIComponent(item.url || '')}">
-                Read Full Analysis →
-              </button>
-            </div>
-          `;
-
-          container.appendChild(card);
-        });
-        
-        // Update cache with fresh data
-        localStorage.setItem('cached_explainers', JSON.stringify(freshExplainers));
-        
-        // Remove new-content animation after 3 seconds
-        setTimeout(() => {
-          document.querySelectorAll('.new-content').forEach(card => {
-            card.classList.remove('new-content');
-          });
-        }, 3000);
-        
-        console.log(`✅ REFRESH SUCCESS: Loaded ${freshExplainers.length} fresh explainers`);
-        
-        // Show success status with critical info
-        if (refreshStatus) {
-          const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-          const recentCount = freshExplainers.filter(item => {
-            const itemDate = new Date(item.published || item.date || item.created);
-            return itemDate >= sevenDaysAgo;
-          }).length;
-          
-          refreshStatus.textContent = `✅ ${freshExplainers.length} items (${recentCount} last 7 days)`;
-          refreshStatus.className = 'refresh-status success';
-          setTimeout(() => {
-            refreshStatus.textContent = '';
-            refreshStatus.className = 'refresh-status';
-          }, 5000);
-        }
-        
-        // Scroll to top to show new content
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-      } else {
-        throw new Error('No fresh explainers found');
-      }
-      
-    } catch (error) {
-      console.error('❌ REFRESH ERROR:', error);
-      container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--text-muted);">❌ Unable to load fresh explainers. No content from last 7 days found.</p>';
-      
-      if (refreshStatus) {
-        refreshStatus.textContent = '❌ No recent content (7+ days)';
-        refreshStatus.className = 'refresh-status error';
-        setTimeout(() => {
-          refreshStatus.textContent = '';
-          refreshStatus.className = 'refresh-status';
-        }, 5000);
-      }
-    } finally {
-      loading = false;
-      loadingDiv.style.display = "none";
-    }
-  });
-} else {
-  console.error('Refresh button not found!');
-}
-
-// Handle "Read Full Analysis" button clicks - FETCH FULL CONTENT LIKE WARS
-if (container) {
-  container.addEventListener('click', (e) => {
-    if (e.target.classList.contains('read-full-btn')) {
-      const button = e.target;
-      
-      // Get ID from button
-      const id = button.dataset.id;
-      
-      console.log("🚀 Read Full Analysis clicked for ID:", id);
-      
-      // Show loading state
-      container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading full analysis...</div>';
-      
-      // Fetch full explainer content using ID (like wars does)
-      fetch(`https://the-terrific-proxy.onrender.com/api/explainers/article?id=${encodeURIComponent(id)}`)
-        .then(res => {
-          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-          return res.json();
-        })
-        .then(explainer => {
-          console.log("📄 Full explainer data received:", explainer);
-          
-          // Navigate to explainer page with full data
-          const params = new URLSearchParams({
-            id: explainer.id,
-            title: explainer.title || '',
-            image: explainer.image || '',
-            summary: explainer.summary || '',
-            body: explainer.body || explainer.content || '', // Try both fields
-            source: explainer.source || '',
-            published: explainer.published || explainer.date || '',
-            url: explainer.url || ''
-          });
-          
-          window.location.href = `explainer.html?${params.toString()}`;
-        })
-        .catch(err => {
-          console.error('❌ Error loading full explainer:', err);
-          container.innerHTML = `
-            <div class="error-message">
-              <h2>Failed to Load Analysis</h2>
-              <p>Unable to load the full analysis. Please try again later.</p>
-              <button class="bubble-btn" onclick="location.reload()">
-                <i class="fas fa-redo"></i> Try Again
-              </button>
-            </div>
-          `;
-        });
-    }
-  });
-}
-
-// Initial load - wait for DOM to be ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    loadExplainers();
-  });
-} else {
-  loadExplainers();
-}
-
-// Auto-refresh every 30 minutes for testing (change to 2 hours later)
-setInterval(() => {
-  console.log('Auto-refreshing explainers (30-minute interval)');
-  loadExplainers(true); // Force refresh
-}, 30 * 60 * 1000); // 30 minutes for testing, change to 2 hours later
-
-// Also refresh every 5 minutes if page is visible
-setInterval(() => {
-  if (!document.hidden && !loading) {
-    console.log('Quick refresh (5-minute interval, page visible)');
-    loadExplainers(false); // Don't reset, just add new content
+    // Show loading state
+    container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading full analysis...</div>';
+    
+    // Fetch full explainer using ID (more reliable than slug)
+    fetch(`https://the-terrific-proxy.onrender.com/api/explainers/article?id=${encodeURIComponent(id)}`)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+      .then(explainer => {
+        console.log("📄 Full explainer data received:", explainer);
+        renderFullAnalysis(explainer);
+      })
+      .catch(err => {
+        console.error('❌ Error loading full analysis:', err);
+        container.innerHTML = `
+          <div class="error-message">
+            <h2>Failed to Load Analysis</h2>
+            <p>Unable to load the full analysis. Please try again later.</p>
+            <button class="bubble-btn" onclick="location.reload()">
+              <i class="fas fa-redo"></i> Try Again
+            </button>
+          </div>
+        `;
+      });
   }
-}, 5 * 60 * 1000); // 5 minutes when page is visible
 
-// Infinite scroll
-window.addEventListener("scroll", () => {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
-    loadExplainers();
+  function renderFullAnalysis(explainer) {
+    if (!container) return;
+    
+    console.log("📄 Rendering full analysis:", explainer.title);
+    
+    container.innerHTML = `
+      <div class="explainer-content">
+        <button class="go-back-btn" onclick="location.reload()">
+          <i class="fas fa-arrow-left"></i> Back to Explainers List
+        </button>
+        
+        ${explainer.image ? `<img src="${explainer.image}" alt="${explainer.title}" class="explainer-image">` : ''}
+        <h1 class="explainer-title">${explainer.title}</h1>
+        
+        <div class="explainer-meta">
+          <span class="source">${explainer.source || 'Unknown'}</span>
+          <span class="published">${explainer.published ? new Date(explainer.published).toLocaleDateString() : 'Unknown date'}</span>
+          ${explainer.url ? `<a href="${explainer.url}" target="_blank" class="original-link">View Original →</a>` : ''}
+        </div>
+        
+        <div class="explainer-summary">
+          <h2>Summary</h2>
+          <p>${explainer.summary || 'No summary available'}</p>
+        </div>
+        
+        <div class="explainer-body">
+          <h2>Full Analysis</h2>
+          ${explainer.body || explainer.content || 'No full analysis available'}
+        </div>
+      </div>
+    `;
   }
+
+  // Helper function to create slug from title
+  function createSlugFromTitle(title) {
+    if (!title) return '';
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim('-');
+  }
+
+  // 🛠️ LOAD MORE BUTTON FUNCTIONALITY
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', function() {
+      loadExplainersList(true); // Append new content
+    });
+  }
+
+  // 🛠️ INFINITE SCROLL FUNCTIONALITY
+  function handleInfiniteScroll() {
+    if (isLoading || !hasMoreContent) return;
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    
+    // Load more when user is within 500px of bottom
+    if (scrollTop + windowHeight >= documentHeight - 500) {
+      console.log("🔄 Infinite scroll triggered - loading more explainers");
+      loadExplainersList(true); // Append new content
+    }
+  }
+
+  // Add scroll event listener with debounce
+  let scrollTimeout;
+  window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(handleInfiniteScroll, 100);
+  });
+
+  // 🛠️ INITIAL LOAD
+  loadExplainersList(); // Load first page
 });
