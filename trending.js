@@ -128,9 +128,8 @@ function renderSlides(slides) {
         console.log('Available explainersData:', explainersData);
         console.log('ExplainersData IDs:', explainersData.map(e => ({ id: e.id, idType: typeof e.id, title: e.title })));
         
-        // Use ultra-short URL - only pass ID
-        console.log('Using ultra-short URL with ID only:', item.id);
-        window.location.href = `explainer.html?id=${encodeURIComponent(item.id)}`;
+        // Show full analysis on homepage (same as it used to work)
+        showFullAnalysisOnHomepage(item);
       };
       
       trendItem.innerHTML = `
