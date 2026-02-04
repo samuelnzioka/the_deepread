@@ -128,8 +128,8 @@ function renderSlides(slides) {
         console.log('Available explainersData:', explainersData);
         console.log('ExplainersData IDs:', explainersData.map(e => ({ id: e.id, idType: typeof e.id, title: e.title })));
         
-        // Show full analysis on homepage (same as it used to work)
-        showFullAnalysisOnHomepage(item);
+        // Navigate to dedicated explainer page for full analysis
+        window.location.href = `explainer.html?id=${encodeURIComponent(item.id)}`;
       };
       
       trendItem.innerHTML = `

@@ -107,7 +107,8 @@ document.addEventListener('DOMContentLoaded', function() {
       readFullBtn.addEventListener('click', function() {
         const slug = this.getAttribute('data-slug');
         const id = this.getAttribute('data-id');
-        loadFullAnalysis(slug, id);
+        // Navigate to dedicated explainer page
+        window.location.href = `explainer.html?id=${encodeURIComponent(id)}`;
       });
       
       container.appendChild(explainerCard);
