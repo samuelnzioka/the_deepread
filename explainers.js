@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 🛠️ IMPLEMENT loadExplainersList() (CARDS) with pagination
   function loadExplainersList(append = false) {
-    if (isLoading || !hasMoreContent) return;
+    if (isLoading || !hasMoreContent) return Promise.resolve();
     
     console.log("📋 Loading explainers list - Page:", currentPage);
     isLoading = true;
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
       loadMoreBtn.disabled = true;
     }
     
-    fetch(`https://the-terrific-proxy.onrender.com/api/explainers?page=${currentPage}`)
+    return fetch(`https://the-terrific-proxy.onrender.com/api/explainers?page=${currentPage}`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
