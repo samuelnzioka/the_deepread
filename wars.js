@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 🛠️ IMPLEMENT loadWarsList() (CARDS) with pagination
   function loadWarsList(append = false) {
-    if (isLoading || !hasMoreContent) return;
+    if (isLoading || !hasMoreContent) return Promise.resolve();
     
     console.log("📋 Loading wars list - Page:", currentPage);
     isLoading = true;
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
       loadMoreBtn.disabled = true;
     }
     
-    fetch(`https://the-terrific-proxy.onrender.com/api/wars?page=${currentPage}`)
+    return fetch(`https://the-terrific-proxy.onrender.com/api/wars?page=${currentPage}`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
@@ -108,12 +108,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const slug = this.getAttribute('data-slug');
         const id = this.getAttribute('data-id');
         
-        // Save current scroll position before navigating
+        // Save current scroll position before loading full analysis
         sessionStorage.setItem('warsScrollPosition', window.pageYOffset || document.documentElement.scrollTop);
         sessionStorage.setItem('warsCurrentPage', currentPage);
         
-        // Navigate to dedicated war page
-        window.location.href = `war.html?id=${encodeURIComponent(id)}`;
+        // Load full analysis in the same page (original behavior)
+        loadFullAnalysis(slug, id);
       });
       
       container.appendChild(articleCard);
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     container.innerHTML = `
       <div class="explainer-content">
-        <button class="go-back-btn" onclick="location.reload()">
+        <button class="go-back-btn" onclick="goBackToWarsList()">
           <i class="fas fa-arrow-left"></i> Back to Wars List
         </button>
         
@@ -188,6 +188,55 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `;
   }
+
+  // Function to go back to wars list and restore scroll position
+  window.goBackToWarsList = function() {
+    const savedScrollPosition = sessionStorage.getItem('warsScrollPosition');
+    const savedCurrentPage = sessionStorage.getItem('warsCurrentPage');
+    
+    if (savedScrollPosition && savedCurrentPage) {
+      console.log('Restoring wars scroll position:', savedScrollPosition, 'and page:', savedCurrentPage);
+      
+      // Load content up to the saved page first
+      const targetPage = parseInt(savedCurrentPage);
+      currentPage = 1; // Reset to first page
+      
+      // Clear the container first
+      container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading wars list...</div>';
+      
+      // Show load more button again
+      if (loadMoreBtn) {
+        loadMoreBtn.style.display = 'block';
+      }
+      
+      // Load pages until we reach the target page
+      function loadPagesUpToTarget() {
+        if (currentPage <= targetPage) {
+          loadWarsList(true).then(() => {
+            currentPage++;
+            if (currentPage <= targetPage) {
+              setTimeout(loadPagesUpToTarget, 100);
+            } else {
+              // All pages loaded, now restore scroll position
+              setTimeout(() => {
+                window.scrollTo(0, parseInt(savedScrollPosition));
+                console.log('Wars scroll position restored to:', savedScrollPosition);
+                
+                // Clear the saved position
+                sessionStorage.removeItem('warsScrollPosition');
+                sessionStorage.removeItem('warsCurrentPage');
+              }, 500);
+            }
+          });
+        }
+      }
+      
+      loadPagesUpToTarget();
+    } else {
+      // Fallback: just reload the page
+      location.reload();
+    }
+  };
 
   // Helper function to create slug from title
   function createSlugFromTitle(title) {
@@ -231,42 +280,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 🛠️ INITIAL LOAD
   loadWarsList(); // Load first page
-  
-  // 🛠️ RESTORE SCROLL POSITION IF COMING BACK FROM WAR PAGE
-  window.addEventListener('load', function() {
-    const savedScrollPosition = sessionStorage.getItem('warsScrollPosition');
-    const savedCurrentPage = sessionStorage.getItem('warsCurrentPage');
-    
-    if (savedScrollPosition && savedCurrentPage) {
-      console.log('Restoring wars scroll position:', savedScrollPosition, 'and page:', savedCurrentPage);
-      
-      // Load content up to the saved page first
-      const targetPage = parseInt(savedCurrentPage);
-      currentPage = 1; // Reset to first page
-      
-      // Load pages until we reach the target page
-      function loadPagesUpToTarget() {
-        if (currentPage <= targetPage) {
-          loadWarsList(true).then(() => {
-            currentPage++;
-            if (currentPage <= targetPage) {
-              setTimeout(loadPagesUpToTarget, 100); // Small delay between loads
-            } else {
-              // All pages loaded, now restore scroll position
-              setTimeout(() => {
-                window.scrollTo(0, parseInt(savedScrollPosition));
-                console.log('Wars scroll position restored to:', savedScrollPosition);
-                
-                // Clear the saved position
-                sessionStorage.removeItem('warsScrollPosition');
-                sessionStorage.removeItem('warsCurrentPage');
-              }, 500);
-            }
-          });
-        }
-      }
-      
-      loadPagesUpToTarget();
-    }
-  });
 });
