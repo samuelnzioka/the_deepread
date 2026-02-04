@@ -107,7 +107,13 @@ document.addEventListener('DOMContentLoaded', function() {
       readFullBtn.addEventListener('click', function() {
         const slug = this.getAttribute('data-slug');
         const id = this.getAttribute('data-id');
-        loadFullAnalysis(slug, id);
+        
+        // Save current scroll position before navigating
+        sessionStorage.setItem('warsScrollPosition', window.pageYOffset || document.documentElement.scrollTop);
+        sessionStorage.setItem('warsCurrentPage', currentPage);
+        
+        // Navigate to dedicated war page
+        window.location.href = `war.html?id=${encodeURIComponent(id)}`;
       });
       
       container.appendChild(articleCard);
@@ -225,4 +231,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 🛠️ INITIAL LOAD
   loadWarsList(); // Load first page
+  
+  // 🛠️ RESTORE SCROLL POSITION IF COMING BACK FROM WAR PAGE
+  window.addEventListener('load', function() {
+    const savedScrollPosition = sessionStorage.getItem('warsScrollPosition');
+    const savedCurrentPage = sessionStorage.getItem('warsCurrentPage');
+    
+    if (savedScrollPosition && savedCurrentPage) {
+      console.log('Restoring wars scroll position:', savedScrollPosition, 'and page:', savedCurrentPage);
+      
+      // Load content up to the saved page first
+      const targetPage = parseInt(savedCurrentPage);
+      currentPage = 1; // Reset to first page
+      
+      // Load pages until we reach the target page
+      function loadPagesUpToTarget() {
+        if (currentPage <= targetPage) {
+          loadWarsList(true).then(() => {
+            currentPage++;
+            if (currentPage <= targetPage) {
+              setTimeout(loadPagesUpToTarget, 100); // Small delay between loads
+            } else {
+              // All pages loaded, now restore scroll position
+              setTimeout(() => {
+                window.scrollTo(0, parseInt(savedScrollPosition));
+                console.log('Wars scroll position restored to:', savedScrollPosition);
+                
+                // Clear the saved position
+                sessionStorage.removeItem('warsScrollPosition');
+                sessionStorage.removeItem('warsCurrentPage');
+              }, 500);
+            }
+          });
+        }
+      }
+      
+      loadPagesUpToTarget();
+    }
+  });
 });

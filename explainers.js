@@ -107,6 +107,11 @@ document.addEventListener('DOMContentLoaded', function() {
       readFullBtn.addEventListener('click', function() {
         const slug = this.getAttribute('data-slug');
         const id = this.getAttribute('data-id');
+        
+        // Save current scroll position before navigating
+        sessionStorage.setItem('explainersScrollPosition', window.pageYOffset || document.documentElement.scrollTop);
+        sessionStorage.setItem('explainersCurrentPage', currentPage);
+        
         // Navigate to dedicated explainer page
         window.location.href = `explainer.html?id=${encodeURIComponent(id)}`;
       });
@@ -370,4 +375,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 🛠️ INITIAL LOAD
   loadExplainersList(); // Load first page
+  
+  // 🛠️ RESTORE SCROLL POSITION IF COMING BACK FROM EXPLAINER PAGE
+  window.addEventListener('load', function() {
+    const savedScrollPosition = sessionStorage.getItem('explainersScrollPosition');
+    const savedCurrentPage = sessionStorage.getItem('explainersCurrentPage');
+    
+    if (savedScrollPosition && savedCurrentPage) {
+      console.log('Restoring scroll position:', savedScrollPosition, 'and page:', savedCurrentPage);
+      
+      // Load content up to the saved page first
+      const targetPage = parseInt(savedCurrentPage);
+      currentPage = 1; // Reset to first page
+      
+      // Load pages until we reach the target page
+      function loadPagesUpToTarget() {
+        if (currentPage <= targetPage) {
+          loadExplainersList(true).then(() => {
+            currentPage++;
+            if (currentPage <= targetPage) {
+              setTimeout(loadPagesUpToTarget, 100); // Small delay between loads
+            } else {
+              // All pages loaded, now restore scroll position
+              setTimeout(() => {
+                window.scrollTo(0, parseInt(savedScrollPosition));
+                console.log('Scroll position restored to:', savedScrollPosition);
+                
+                // Clear the saved position
+                sessionStorage.removeItem('explainersScrollPosition');
+                sessionStorage.removeItem('explainersCurrentPage');
+              }, 500);
+            }
+          });
+        }
+      }
+      
+      loadPagesUpToTarget();
+    }
+  });
 });
