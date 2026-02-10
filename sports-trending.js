@@ -1,7 +1,8 @@
-// Sports Slideshow - Gets sports from sports API
+// Sports Slideshow - Gets content from sports tab (like trending gets from explainers)
 let currentSportsSlide = 0;
-let sportsData = [];
+let sportsData = []; // Make this global for access in click handlers
 let sportsAutoScrollInterval;
+let refreshInterval;
 
 // Helper function to create slug from title
 function createSlugFromTitle(title) {
@@ -14,102 +15,55 @@ function createSlugFromTitle(title) {
     .trim('-');
 }
 
-// Load sports content from API
 async function loadSportsContent() {
   try {
-    console.log('🏅 Loading sports content from sports API...');
+    console.log('Loading sports content from sports API...');
     
-    // Fetch sports data from our API with retry logic
-    const maxRetries = 3;
-    let retryCount = 0;
-    let sportsData = null;
+    // Fetch from sports API (like trending gets from explainers)
+    const sportsResponse = await fetch('https://the-terrific-proxy.onrender.com/api/sports?sport=soccer&page=1');
     
-    while (retryCount < maxRetries && !sportsData) {
-      try {
-        console.log(`Attempt ${retryCount + 1} to fetch sports data...`);
-        
-        const sportsResponse = await fetch('https://the-terrific-proxy.onrender.com/api/sports?sport=soccer&page=1', {
-          timeout: 10000 // 10 second timeout
-        });
-        
-        if (!sportsResponse.ok) {
-          if (sportsResponse.status === 504) {
-            console.log('⏰ Gateway timeout, retrying...');
-            throw new Error('Gateway timeout - retrying...');
-          } else {
-            throw new Error(`HTTP error! status: ${sportsResponse.status}`);
-          }
-        }
-        
-        const freshData = await sportsResponse.json();
-        console.log('📋 Fetched fresh sports data:', freshData);
-        
-        sportsData = freshData.results || freshData.sports || [];
-        break; // Success, exit retry loop
-        
-      } catch (error) {
-        console.error(`❌ Attempt ${retryCount + 1} failed:`, error);
-        retryCount++;
-        
-        if (retryCount < maxRetries) {
-          // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-      }
+    if (!sportsResponse.ok) {
+      throw new Error(`HTTP error! status: ${sportsResponse.status}`);
     }
     
-    if (!sportsData) {
-      console.error('❌ All retries failed, showing empty sports');
-      renderSportsSlides([]);
-      return;
-    }
+    const freshData = await sportsResponse.json();
+    console.log('Fetched fresh sports data:', freshData);
     
-    sportsData = freshData.sports || [];
-    console.log('🎯 Sports data loaded:', sportsData.length, 'items');
+    sportsData = freshData.results || freshData.sports || [];
     
     if (!Array.isArray(sportsData) || sportsData.length === 0) {
-      console.log('❌ No sports available - showing empty state');
+      console.log('No sports available - showing empty trending');
       renderSportsSlides([]);
       return;
     }
     
-    // Use exactly 6 sports for trending (2 slides with 3 items each)
-    const processedSportsData = sportsData.slice(0, 6).map(sport => ({
-      id: sport.id,
-      slug: sport.slug || createSlugFromTitle(sport.title),
-      type: 'sport',
-      title: sport.title || 'No title',
-      image: sport.image || sport.thumbnail || `https://picsum.photos/200/120?random=${Math.random()}`,
-      url: sport.url || `sport.html?id=${sport.id || 'unknown'}`,
-      source: sport.source || 'The Guardian'
+    // Use exactly 6 sports items for trending (2 per slide, 3 slides total)
+    const displayData = sportsData.slice(0, 6).map(article => ({
+      id: article.link, // CRITICAL: Include ID for full analysis
+      url: article.link,
+      slug: createSlugFromTitle(article.title),
+      type: 'sports',
+      title: article.title || 'No title',
+      image: article.image && article.image !== '/assets/placeholder.jpg' 
+        ? article.image 
+        : `https://source.unsplash.com/200x120/?${encodeURIComponent(article.title || 'sports')}`,
+      source: 'Sports'
     }));
     
-    console.log('✅ Processed sports data:', processedSportsData);
-    
-    // Create slides (3 items per slide, 2 slides total)
-    const slides = [];
-    for (let i = 0; i < processedSportsData.length; i += 3) {
-      slides.push(processedSportsData.slice(i, i + 3));
-    }
-    
-    console.log('🎞️ Created slides:', slides);
-    renderSportsSlides(slides);
+    renderSportsSlides(displayData);
     
   } catch (error) {
-    console.error('❌ Error loading sports content:', error);
+    console.error('❌ Error loading sports:', error);
     renderSportsSlides([]);
   }
 }
 
-// Render sports slides
-function renderSportsSlides(slides) {
-  console.log('🎨 Rendering sports slides:', slides);
-  
+function renderSportsSlides(articles) {
   const slidesContainer = document.querySelector('#sportsDialog .slides');
   const dotsContainer = document.querySelector('#sportsDialog .slide-dots');
   
   if (!slidesContainer || !dotsContainer) {
-    console.error('❌ Sports containers not found');
+    console.error('Sports container not found');
     return;
   }
   
@@ -117,44 +71,39 @@ function renderSportsSlides(slides) {
   slidesContainer.innerHTML = '';
   dotsContainer.innerHTML = '';
   
-  if (!slides || slides.length === 0) {
-    console.log('📭 Showing empty state');
-    slidesContainer.innerHTML = `
-      <div class="slide active">
-        <div class="slide-content">
-          <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-            <i class="fas fa-football-ball" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
-            <h3>No sports news available</h3>
-            <p>Check back later for the latest sports analysis.</p>
-          </div>
-        </div>
-      </div>
-    `;
+  if (!articles || articles.length === 0) {
+    slidesContainer.innerHTML = '<div class="no-content">No sports available</div>';
     return;
   }
   
-  // Create slides
+  // Create slides (2 articles per slide)
+  const slides = [];
+  for (let i = 0; i < articles.length; i += 2) {
+    slides.push(articles.slice(i, i + 2));
+  }
+  
   slides.forEach((slide, index) => {
-    console.log(`🎞️ Creating slide ${index + 1} with ${slide.length} items`);
-    
     const slideDiv = document.createElement('div');
     slideDiv.className = `slide ${index === 0 ? 'active' : ''}`;
     
     const slideContent = document.createElement('div');
     slideContent.className = 'slide-content';
     
-    slide.forEach(item => {
-      const sportItem = document.createElement('div');
-      sportItem.className = 'trend-item';
-      sportItem.onclick = () => {
-        console.log('🏅 Clicked sports item:', item.title);
-        // Use existing system
-        window.location.href = `sports.html?id=${encodeURIComponent(item.id)}`;
+    slide.forEach((item, itemIndex) => {
+      const trendItem = document.createElement('div');
+      trendItem.className = 'trend-item';
+      trendItem.onclick = () => {
+        console.log('Clicked sports item:', item);
+        console.log('Item ID:', item.id);
+        
+        // Navigate to sports page for full analysis (like trending goes to explainer.html)
+        window.location.href = `sports.html?sport=soccer`;
       };
       
-      sportItem.innerHTML = `
+      trendItem.innerHTML = `
         <div class="trend-item-image">
-          <img src="${item.image}" alt="${item.title}" loading="lazy">
+          <img src="${item.image}" alt="${item.title}" loading="lazy" 
+               onerror="this.src='https://source.unsplash.com/200x120/?${encodeURIComponent(item.title || 'sports')}'">
         </div>
         <div class="trend-item-content">
           <span class="type-badge">${item.type.toUpperCase()}</span>
@@ -163,13 +112,15 @@ function renderSportsSlides(slides) {
         </div>
       `;
       
-      // Handle image errors
-      const img = sportItem.querySelector('img');
-      img.addEventListener('error', function() {
-        this.src = `https://picsum.photos/200/120?random=${Math.random()}`;
-      });
+      // Add image load error handling
+      const img = trendItem.querySelector('img');
+      if (img) {
+        img.addEventListener('error', function() {
+          this.src = `https://source.unsplash.com/200x120/?${encodeURIComponent(item.title || 'sports')}`;
+        });
+      }
       
-      slideContent.appendChild(sportItem);
+      slideContent.appendChild(trendItem);
     });
     
     slideDiv.appendChild(slideContent);
@@ -182,7 +133,7 @@ function renderSportsSlides(slides) {
     dotsContainer.appendChild(dot);
   });
   
-  console.log('✅ Sports slides rendered successfully');
+  console.log('Sports slides rendered successfully');
 }
 
 // Go to specific slide
@@ -192,13 +143,15 @@ function goToSportsSlide(index) {
   
   if (slides.length === 0) return;
   
-  // Hide current slide
-  slides[currentSportsSlide].classList.remove('active');
-  dots[currentSportsSlide].classList.remove('active');
+  // Hide all slides
+  slides.forEach(slide => slide.classList.remove('active'));
+  dots.forEach(dot => dot.classList.remove('active'));
+  
+  // Show current slide
+  slides[index].classList.add('active');
+  dots[index].classList.add('active');
   
   currentSportsSlide = index;
-  slides[currentSportsSlide].classList.add('active');
-  dots[currentSportsSlide].classList.add('active');
 }
 
 // Change slide (next/previous)
@@ -212,42 +165,54 @@ function changeSportsSlide(direction) {
   slides[currentSportsSlide].classList.remove('active');
   dots[currentSportsSlide].classList.remove('active');
   
-  // Calculate next slide
-  currentSportsSlide = (currentSportsSlide + direction + slides.length) % slides.length;
+  currentSportsSlide += direction;
   
-  // Show next slide
-  slides[currentSportsSlide].classList.add('active');
-  dots[currentSportsSlide].classList.add('active');
+  if (currentSportsSlide < 0) currentSportsSlide = slides.length - 1;
+  if (currentSportsSlide >= slides.length) currentSportsSlide = 0;
+  
+  goToSportsSlide(currentSportsSlide);
 }
 
-// Auto-scroll functions
+// Auto-scroll functionality
 function startAutoScroll() {
-  stopAutoScroll();
   sportsAutoScrollInterval = setInterval(() => {
     changeSportsSlide(1);
-  }, 4000);
+  }, 5000);
 }
 
 function stopAutoScroll() {
   if (sportsAutoScrollInterval) {
     clearInterval(sportsAutoScrollInterval);
-    sportsAutoScrollInterval = null;
   }
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
   console.log('🚀 Initializing sports trending...');
   
   const sportsDialog = document.getElementById('sportsDialog');
   if (sportsDialog) {
     console.log('✅ Sports dialog found, loading content...');
     loadSportsContent();
-    startAutoScroll();
     
-    // Pause auto-scroll on hover
-    sportsDialog.addEventListener('mouseenter', stopAutoScroll);
-    sportsDialog.addEventListener('mouseleave', startAutoScroll);
+    // Add slide navigation buttons
+    setTimeout(() => {
+      const prevBtn = document.querySelector('#sportsDialog .slide-btn.prev');
+      const nextBtn = document.querySelector('#sportsDialog .slide-btn.next');
+      
+      if (prevBtn) prevBtn.onclick = () => changeSportsSlide(-1);
+      if (nextBtn) nextBtn.onclick = () => changeSportsSlide(1);
+      
+      // Start auto-scroll
+      startAutoScroll();
+      
+      // Pause auto-scroll on hover
+      const slidesContainer = document.querySelector('#sportsDialog .slideshow-container');
+      if (slidesContainer) {
+        slidesContainer.addEventListener('mouseenter', stopAutoScroll);
+        slidesContainer.addEventListener('mouseleave', startAutoScroll);
+      }
+    }, 1000);
   } else {
     console.error('❌ Sports dialog not found in DOM');
   }
