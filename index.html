@@ -44,6 +44,26 @@
 
 
         <main class="content">
+            <section class="dialog dialog--full" id="newDialog">
+                <h2><i class="fas fa-newspaper"></i> Local News</h2>
+                <div class="dialog-body">
+                    <div class="slideshow-container">
+                        <div class="slides">
+                            <!-- Slides will be populated by JavaScript -->
+                        </div>
+                        <button class="slide-btn prev" onclick="changeLocalSlide(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="slide-btn next" onclick="changeLocalSlide(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <div class="slide-dots">
+                            <!-- Dots will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <section class="dialog dialog--full" id="trendingDialog">
                 <h2><i class="fas fa-fire"></i> Trending Now</h2>
                 <div class="dialog-body">
@@ -138,10 +158,9 @@
       </div>
     </div>
 
-    <script src="scripts.js"></script>
     <script src="trending.js"></script>
-    <script src="sports-trending.js"></script>
-    <script src="home-video.js"></script>
+    <script src="local-news.js"></script>
+    <script src="scripts.js"></script>
     <script src="themes.js"></script>
     <script src="scroll-to-top.js"></script>
     <script src="infoModal.js"></script>
