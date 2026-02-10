@@ -101,7 +101,7 @@ function renderLocalNews(articles, country) {
                         <span class="published">${formatDate(published)}</span>
                     </div>
                     <div class="explainer-controls">
-                        <a href="${url}" target="_blank" class="read-full local-read-btn">
+                        <a href="#" onclick="openLocalArticle('${url}', '${title}', '${country}')" class="read-full local-read-btn">
                             Read Full Article →
                         </a>
                     </div>
@@ -138,4 +138,10 @@ function formatDate(dateString) {
     } catch (error) {
         return 'Unknown date';
     }
+}
+
+// Function to open local article page
+function openLocalArticle(url, title, country) {
+    // Navigate to dedicated local article page
+    window.location.href = `local-article.html?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&country=${encodeURIComponent(country)}`;
 }
