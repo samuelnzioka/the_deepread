@@ -19,15 +19,50 @@ async function loadSportsContent() {
   try {
     console.log('🏅 Loading sports content from sports API...');
     
-    // Fetch sports data from our API
-    const sportsResponse = await fetch('https://the-terrific-proxy.onrender.com/api/sports?sport=soccer&page=1');
+    // Fetch sports data from our API with retry logic
+    const maxRetries = 3;
+    let retryCount = 0;
+    let sportsData = null;
     
-    if (!sportsResponse.ok) {
-      throw new Error(`HTTP error! status: ${sportsResponse.status}`);
+    while (retryCount < maxRetries && !sportsData) {
+      try {
+        console.log(`Attempt ${retryCount + 1} to fetch sports data...`);
+        
+        const sportsResponse = await fetch('https://the-terrific-proxy.onrender.com/api/sports?sport=soccer&page=1', {
+          timeout: 10000 // 10 second timeout
+        });
+        
+        if (!sportsResponse.ok) {
+          if (sportsResponse.status === 504) {
+            console.log('⏰ Gateway timeout, retrying...');
+            throw new Error('Gateway timeout - retrying...');
+          } else {
+            throw new Error(`HTTP error! status: ${sportsResponse.status}`);
+          }
+        }
+        
+        const freshData = await sportsResponse.json();
+        console.log('📋 Fetched fresh sports data:', freshData);
+        
+        sportsData = freshData.results || freshData.sports || [];
+        break; // Success, exit retry loop
+        
+      } catch (error) {
+        console.error(`❌ Attempt ${retryCount + 1} failed:`, error);
+        retryCount++;
+        
+        if (retryCount < maxRetries) {
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
     }
     
-    const freshData = await sportsResponse.json();
-    console.log('📋 Fetched fresh sports data:', freshData);
+    if (!sportsData) {
+      console.error('❌ All retries failed, showing empty sports');
+      renderSportsSlides([]);
+      return;
+    }
     
     sportsData = freshData.sports || [];
     console.log('🎯 Sports data loaded:', sportsData.length, 'items');
