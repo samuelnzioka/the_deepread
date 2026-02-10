@@ -7,6 +7,92 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        /* Local tabs with sky blue bubble animation */
+        .local-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 0 20px;
+            border-bottom: 2px solid var(--border-soft);
+            overflow-x: auto;
+        }
+
+        .local-tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .local-tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(135, 206, 235, 0.1); /* Sky blue hover */
+        }
+
+        .local-tab-btn.active {
+            color: #87CEEB; /* Sky blue */
+            border-bottom-color: #87CEEB; /* Sky blue */
+        }
+
+        /* Bubble animation for local tabs */
+        .local-tab-btn {
+            background: #87CEEB; /* Sky blue */
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 25px;
+        }
+
+        .local-tab-btn::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, #87CEEB, #4682B4);
+            border-radius: 25px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .local-tab-btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 10px 25px rgba(135, 206, 235, 0.25);
+        }
+
+        .local-tab-btn:hover::after {
+            opacity: 1;
+        }
+
+        .local-tab-btn.active {
+            background: linear-gradient(45deg, #87CEEB, #4682B4);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(135, 206, 235, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .local-tabs {
+                padding: 0 10px;
+            }
+            
+            .local-tab-btn {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -46,14 +132,14 @@
             <div class="local-section">
                 <h1><i class="fas fa-globe-africa"></i> Local News</h1>
                 
-                <div id="local-tabs">
-                    <button onclick="loadLocalNews('kenya')" class="local-tab-btn active">Kenya</button>
-                    <button onclick="loadLocalNews('south-africa')" class="local-tab-btn">South Africa</button>
-                    <button onclick="loadLocalNews('nigeria')" class="local-tab-btn">Nigeria</button>
-                    <button onclick="loadLocalNews('uganda')" class="local-tab-btn">Uganda</button>
-                    <button onclick="loadLocalNews('tanzania')" class="local-tab-btn">Tanzania</button>
-                    <button onclick="loadLocalNews('burkina-faso')" class="local-tab-btn">Burkina Faso</button>
-                    <button onclick="loadLocalNews('ethiopia')" class="local-tab-btn">Ethiopia</button>
+                <div class="local-tabs">
+                    <button class="local-tab-btn active" data-country="kenya">Kenya</button>
+                    <button class="local-tab-btn" data-country="south-africa">South Africa</button>
+                    <button class="local-tab-btn" data-country="nigeria">Nigeria</button>
+                    <button class="local-tab-btn" data-country="uganda">Uganda</button>
+                    <button class="local-tab-btn" data-country="tanzania">Tanzania</button>
+                    <button class="local-tab-btn" data-country="burkina-faso">Burkina Faso</button>
+                    <button class="local-tab-btn" data-country="ethiopia">Ethiopia</button>
                 </div>
 
                 <div id="local-news-container">

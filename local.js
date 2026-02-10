@@ -2,6 +2,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Load Kenya news by default
     loadLocalNews('kenya');
+    
+    // Add click event listeners to all local tabs
+    document.querySelectorAll('.local-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const country = this.getAttribute('data-country');
+            loadLocalNews(country);
+        });
+    });
 });
 
 let currentCountry = 'kenya';
@@ -17,7 +25,7 @@ async function loadLocalNews(country) {
     document.querySelectorAll('.local-tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    document.querySelector(`[data-country="${country}"]`).classList.add('active');
     
     const container = document.getElementById('local-news-container');
     
@@ -29,7 +37,7 @@ async function loadLocalNews(country) {
     `;
     
     try {
-        // Use the correct API endpoint from server.js
+        // Use correct API endpoint from server.js
         const response = await fetch(`https://the-terrific-proxy.onrender.com/api/local-news/${country}`);
         
         if (!response.ok) {
