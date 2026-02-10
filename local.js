@@ -80,7 +80,7 @@ function renderLocalNews(articles, country) {
         return;
     }
     
-    let html = `<div class="local-news-grid">`;
+    let html = `<div class="explainers-grid">`;
     
     articles.forEach(article => {
         const title = article.title || 'No title';
@@ -91,20 +91,22 @@ function renderLocalNews(articles, country) {
         const published = new Date().toISOString(); // Since API doesn't provide date
         
         html += `
-            <article class="local-news-card">
-                ${image ? `<img src="${image}" alt="${title}" class="local-news-image">` : ''}
-                <div class="local-news-content">
-                    <h3 class="local-news-title">${title}</h3>
-                    <p class="local-news-summary">${summary}</p>
-                    <div class="local-news-meta">
+            <div class="explainer-card">
+                ${image ? `<img src="${image}" alt="${title}" class="explainer-image">` : ''}
+                <div class="explainer-content">
+                    <h3 class="explainer-title">${title}</h3>
+                    <p class="explainer-summary">${summary}</p>
+                    <div class="explainer-meta">
                         <span class="source">${source}</span>
                         <span class="published">${formatDate(published)}</span>
                     </div>
-                    <a href="${url}" target="_blank" class="read-more-btn">
-                        Read Full Article →
-                    </a>
+                    <div class="explainer-controls">
+                        <a href="#" onclick="openLocalArticle('${url}', '${title}', '${country}')" class="read-full local-read-btn">
+                            Read Full Article →
+                        </a>
+                    </div>
                 </div>
-            </article>
+            </div>
         `;
     });
     
@@ -136,4 +138,10 @@ function formatDate(dateString) {
     } catch (error) {
         return 'Unknown date';
     }
+}
+
+// Function to open local article page
+function openLocalArticle(url, title, country) {
+    // Navigate to dedicated local article page
+    window.location.href = `local-article.html?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&country=${encodeURIComponent(country)}`;
 }
