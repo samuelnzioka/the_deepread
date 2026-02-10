@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local News — THE DEEPREAD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <div class="nav-header">
+                <div class="logo">THE DEEPREAD</div>
+                <div class="tagline">[In-depth Analysis • Global Insights • Breaking Stories]</div>
+            </div>
+            <div class="nav-divider"></div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">HOME</a>
+                <span class="nav-separator">|</span>
+                <a href="local.html" class="nav-link active">LOCAL</a>
+                <span class="nav-separator">|</span>
+                <a href="memes.html" class="nav-link">MEMES</a>
+                <span class="nav-separator">|</span>
+                <a href="explainers.html" class="nav-link">EXPLAINERS</a>
+                <span class="nav-separator">|</span>
+                <a href="sports.html" class="nav-link">SPORTS</a>
+                <span class="nav-separator">|</span>
+                <a href="propaganda.html" class="nav-link">PROPAGANDA LAB</a>
+                <span class="nav-separator">|</span>
+                <a href="wars.html" class="nav-link">WARS & POWER</a>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <button id="themeToggleBtn" class="theme-toggle-top" type="button" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="local-section">
+                <h1><i class="fas fa-globe-africa"></i> Local News</h1>
+                
+                <div id="local-tabs">
+                    <button onclick="loadLocalNews('kenya')" class="local-tab-btn active">Kenya</button>
+                    <button onclick="loadLocalNews('south-africa')" class="local-tab-btn">South Africa</button>
+                    <button onclick="loadLocalNews('nigeria')" class="local-tab-btn">Nigeria</button>
+                    <button onclick="loadLocalNews('uganda')" class="local-tab-btn">Uganda</button>
+                    <button onclick="loadLocalNews('tanzania')" class="local-tab-btn">Tanzania</button>
+                    <button onclick="loadLocalNews('burkina-faso')" class="local-tab-btn">Burkina Faso</button>
+                    <button onclick="loadLocalNews('ethiopia')" class="local-tab-btn">Ethiopia</button>
+                </div>
+
+                <div id="local-news-container">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i> Loading local news...
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="site-footer">
+            <div class="footer-content">
+                <div class="footer-divider"></div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">About</a>
+                    <span class="footer-separator">|</span>
+                    <a href="#" class="footer-link">Contact</a>
+                    <span class="footer-separator">|</span>
+                    <a href="#" class="footer-link">Terms</a>
+                    <span class="footer-separator">|</span>
+                    <a href="#" class="footer-link">Submit Content</a>
+                    <span class="footer-separator">|</span>
+                    <a href="#" class="footer-link">Become a Contributor</a>
+                </div>
+                <div class="footer-copyright">
+                    THE DEEPREAD © 2025 — In-depth Analysis • Global Insights • Breaking Stories
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts.js"></script>
+    <script src="local.js"></script>
+    <script src="themes.js"></script>
+    <script src="scroll-to-top.js"></script>
+</body>
+</html>
