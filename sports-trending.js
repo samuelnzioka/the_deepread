@@ -29,7 +29,7 @@ async function loadSportsContent() {
     const freshData = await sportsResponse.json();
     console.log('Fetched fresh sports data:', freshData);
     
-    sportsData = freshData.results || freshData.sports || [];
+    sportsData = freshData.sports || [];
     
     if (!Array.isArray(sportsData) || sportsData.length === 0) {
       console.log('No sports available - showing empty trending');
